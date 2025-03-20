@@ -1,7 +1,9 @@
 %{
-    #include "token.h"
-    int no_of_lines = 0;
+    #include "stdio.h"
+    #include "tokens.h"
 %}
+
+%option noyywrap yylineno
 
 %%
 as      return TK_PR_AS;
@@ -16,25 +18,25 @@ returns return TK_PR_RETURNS;
 while   return TK_PR_WHILE;
 with    return TK_PR_WITH;
 
-[\!\*\/\%\+\-\<\>\[\]\(\)\=\,\;\&\|] return (int) yytext[0];
+[\!\*\/\%\+\-\<\>\[\]\(\)\=\,\;\&\|] return yytext[0];
 
-<=      return TK_OC_LE;
->=      return TK_OC_GE;
-==      return TK_OC_EQ;
-!=      return TK_OC_NE;
+\<\=      return TK_OC_LE;
+\>\=      return TK_OC_GE;
+\=\=      return TK_OC_EQ;
+\!\=      return TK_OC_NE;
 
-[_a-z][a-z0-9_]* return TK_ID;
-[0-9]+  return TK_OC_INT;
-[0-9]*\.[0-9]+ return TK_OC_FLOAT;
+[a-z_][a-z0-9_]* return TK_ID;
+[0-9]+  return TK_LI_INT;
+[0-9]*\.[0-9]+ return TK_LI_FLOAT;
 
-\\\\.*     ;    // Ignore comments
-[ \t\r]    ;    // Ignore whitespaces
-.       return TK_ER;
+\\\\.*        continue;    // Ignore comments
+[\n\r\t ]     continue;    // Ignore whitespaces
 
-\n      ++no_of_lines;
 end     return 0;
+
+.   return TK_ER;
 %%
 
 int get_line_number(){
-    return no_of_lines + 1;
+    return yylineno;
 }
