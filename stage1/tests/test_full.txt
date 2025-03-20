@@ -1,0 +1,28 @@
+// Test file for lexical analyzer
+
+// Keywords
+as declare else float if int is return returns while with
+
+// Special Characters
+! * / % + - < > [ ] ( ) = , ; & |
+
+// Compound Operators
+<= >= == !=
+
+// Identifiers
+foo bar_123 _baz my_var_1
+
+// Literals
+123 456 789
+3.14 0.5 42.0
+
+// Comments (should be ignored)
+// This is a comment
+// Another comment
+
+// Whitespace (should be ignored)
+               
+// Tabs (should be ignored)
+                                    
+// CAPSLOCK IS ALLOWED INSIDE COMMENTS
+// SPECIAL CHARACTERS ARE ALLOWED INSIDE COMMENTS # $ @ ¨ £ ¬

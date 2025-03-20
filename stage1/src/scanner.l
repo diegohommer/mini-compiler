@@ -6,7 +6,6 @@
 %option noyywrap yylineno
 
 %%
-end     return 0;
 as      return TK_PR_AS;
 declare return TK_PR_DECLARE;
 else    return TK_PR_ELSE;
@@ -30,7 +29,7 @@ with    return TK_PR_WITH;
 [0-9]+  return TK_LI_INT;
 [0-9]*\.[0-9]+ return TK_LI_FLOAT;
 
-\\\\.*        continue;    // Ignore comments
+\/\/.*        continue;    // Ignore comments
 [\n\r\t ]     continue;    // Ignore whitespaces
 
 .   return TK_ER;
