@@ -1,7 +1,0 @@
-CC=gcc
-CFLAGS=-I
-DEPS = tokens.h
-
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
-
