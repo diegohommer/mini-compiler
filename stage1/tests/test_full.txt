@@ -1,7 +1,7 @@
 // Test file for lexical analyzer
 
 // Keywords
-as declare else float if int is return returns while with
+as declare else float if int is return returns while with // test same line comment
 
 // Special Characters
 ! * / % + - < > [ ] ( ) = , ; & |

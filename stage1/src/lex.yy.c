@@ -856,7 +856,7 @@ return TK_PR_WITH;
 case 12:
 YY_RULE_SETUP
 #line 21 "src/scanner.l"
-return yytext[0];
+return (int) yytext[0];
 	YY_BREAK
 case 13:
 YY_RULE_SETUP

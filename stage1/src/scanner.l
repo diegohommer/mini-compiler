@@ -18,7 +18,7 @@ returns return TK_PR_RETURNS;
 while   return TK_PR_WHILE;
 with    return TK_PR_WITH;
 
-[\!\*\/\%\+\-\<\>\[\]\(\)\=\,\;\&\|] return yytext[0];
+[\!\*\/\%\+\-\<\>\[\]\(\)\=\,\;\&\|] return (int) yytext[0];
 
 \<\=      return TK_OC_LE;
 \>\=      return TK_OC_GE;
