@@ -1,7 +1,7 @@
 # Directories
-IDIR = include
-SDIR = src
-ODIR = obj
+IDIR = .
+SDIR = .
+ODIR = ./obj
 
 
 # Compiler and flags
@@ -18,7 +18,6 @@ _OBJ = main.o lex.yy.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 EXEC = etapa1
-
 
 # Default execution to all rules
 all: $(EXEC)
