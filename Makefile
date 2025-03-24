@@ -1,7 +1,7 @@
 # Directories
 IDIR = .
 SDIR = .
-ODIR = ./obj
+ODIR = .
 
 
 # Compiler and flags
