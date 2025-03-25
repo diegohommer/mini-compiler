@@ -40,3 +40,4 @@ $(EXEC): $(OBJ)
 
 clean:
 	rm -f $(ODIR)/*.o $(EXEC)
+	rm -f lex.yy.c
