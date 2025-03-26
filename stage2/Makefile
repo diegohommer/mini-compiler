@@ -2,7 +2,6 @@
 IDIR = include
 SDIR = src
 ODIR = obj
-BDIR = bin
 
 
 # Compiler and flags
@@ -18,15 +17,11 @@ DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 _OBJ = main.o lex.yy.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-EXEC = $(BDIR)/stage1.out
+EXEC = etapa1
 
 
 # Default execution to all rules
 all: $(EXEC)
-
-# Rule to build bin directory if it doesn't exist
-$(BDIR):
-	mkdir -p $(BDIR)
 
 # Rule to build obj directory if it doesn't exist
 $(ODIR):
@@ -41,7 +36,7 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS) | $(ODIR)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 # Rule to link object files into the final executable
-$(EXEC): $(OBJ) 
+$(EXEC): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
