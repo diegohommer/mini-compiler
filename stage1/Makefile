@@ -20,7 +20,6 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 EXEC = $(BDIR)/stage1.out
 
-
 # Default execution to all rules
 all: $(EXEC)
 
@@ -41,7 +40,7 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS) | $(ODIR)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 # Rule to link object files into the final executable
-$(EXEC): $(OBJ) 
+$(EXEC): $(OBJ) | $(BDIR)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
