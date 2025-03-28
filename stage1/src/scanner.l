@@ -29,8 +29,8 @@ with    return TK_PR_WITH;
 [0-9]+  return TK_LI_INT;
 [0-9]*\.[0-9]+ return TK_LI_FLOAT;
 
-\/\/.*        return 0;    // Ignore comments
-[\n\r\t ]     return 0;    // Ignore whitespaces
+\/\/.*        // Ignore comments
+[\n\r\t ]     // Ignore whitespaces
 
 .   return TK_ER;
 %%
