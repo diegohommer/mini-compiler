@@ -6,6 +6,10 @@
 %option noyywrap yylineno
 
 %%
+    /* IGNORE */
+\/\/.*        // Ignore comments
+[\n\r\t ]     // Ignore whitespaces
+
     /* RESERVED KEYWORDS */
 as      return TK_PR_AS; 
 declare return TK_PR_DECLARE;
@@ -32,10 +36,6 @@ with    return TK_PR_WITH;
 [a-z_][a-z0-9_]* return TK_ID;
 [0-9]+  return TK_LI_INT;
 [0-9]*\.[0-9]+ return TK_LI_FLOAT;
-
-    /* IGNORE */
-\/\/.*        // Ignore comments
-[\n\r\t ]     // Ignore whitespaces
 
 .   return TK_ER;
 %%
