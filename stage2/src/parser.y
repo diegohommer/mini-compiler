@@ -111,7 +111,7 @@ var_init: TK_PR_WITH literal
 
 
 // ATRIBUTION - Defines a atribution
-atribution: TK_ID TK_PR_IS expr;
+atribution: TK_ID TK_PR_IS exp;
 
 
 // FUNCTION CALL - Calls the function with TK_ID name with call_args
@@ -121,26 +121,23 @@ func_call: TK_ID call_args;
 call_args: '(' call_args_list ')'
          | '(' ')';
 
-call_args_list: expr
-              | call_args_list ',' expr;
+call_args_list: exp
+              | call_args_list ',' exp;
 
 
 // RETURN COMMAND - Defines return statement with an expression and its type.
-return_cmd: TK_PR_RETURN expr TK_PR_AS type;
+return_cmd: TK_PR_RETURN exp TK_PR_AS type;
 
 
 // CONDITIONAL - Defines an if-else structure (optional else)
-if_cmd: TK_PR_IF '(' expr ')' cmd_block;
+if_cmd: TK_PR_IF '(' exp ')' cmd_block;
 
 else_cmd: TK_PR_ELSE cmd_block
         | /* empty */;
 
 
 // REPETITION - Defines a while-loop structure
-while_cmd: TK_PR_WHILE '(' expr ')' cmd_block;
-
-
-
+while_cmd: TK_PR_WHILE '(' exp ')' cmd_block;
 
 
 
@@ -148,20 +145,49 @@ while_cmd: TK_PR_WHILE '(' expr ')' cmd_block;
 //        EXPRESSIONS
 // =========================== 
 
+// EXPRESSION START
+exp: n7;
 
-expr: TK_LI_INT;
+// PRECEDENCE 7 (LOWEST) - Bitwise OR
+n7: n7 '|' n6
+  | n6;
 
+// PRECEDENCE 6 - Bitwise AND
+n6: n6 '&' n5
+  | n5;
+
+// PRECEDENCE 5 - Comparison (==, !=)
+prec5_ops: TK_OC_EQ | TK_OC_NE;
+n5: n5 prec5_ops n4
+  | n4;
+
+// PRECEDENCE 4 - Comparison (<, >, <=, >=)
+prec4_ops: '<' | '>' | TK_OC_LE | TK_OC_GE;
+n4: n4 prec4_ops n3
+  | n3;
+
+// PRECEDENCE 3 - Addition & Subtraction (+, -)
+prec3_ops: '+' | '-';
+n3: n3 prec3_ops n2
+  | n2;
+
+// PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %)
+prec2_ops: '*' | '/' | '%';
+n2: n2 prec2_ops n1
+  | n1;
+
+// PRECEDENCE 1 - Unary Operators (+, -, !)
+prec1_ops: '+' | '-' | '!';
+n1: prec1_ops n0
+  | n0;
+
+// PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
+prec0_ops: func_call | TK_ID | literal | '(' exp ')';
+n0: prec0_ops;
+
+// LITERAL AND TYPE TOKENS
 literal: TK_LI_INT | TK_LI_FLOAT;
 type: TK_PR_INT | TK_PR_FLOAT;
-
-
-
-
-
-
-// exp: n7;
-// n7: n7 '|' n6;
-// n7: n6;
 
 %%
 
