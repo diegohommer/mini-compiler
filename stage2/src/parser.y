@@ -38,11 +38,13 @@ int get_line_number(void);
 
 // PROGRAM - A optional list of elements followed by a semicolon
 program: prog_list ';';
-program: ;
+       | /* empty */;
+
 
 // PROGRAM LIST - A list of comma-separated elements
 prog_list: element;
-prog_list: prog_list ',' element;
+         | prog_list ',' element;
+
 
 // ELEMENT - Either a function definition or variable declaration
 element: def_func | var_decl;
@@ -56,19 +58,22 @@ element: def_func | var_decl;
 // FUNCTION DEFINITION - A header, optinal list of params and a body.
 def_func: func_header func_params TK_PR_IS func_body;
 
+
 // FUNCTION HEADER - Defines the function name and return type.
 func_header: TK_ID TK_PR_RETURNS type;
 
-// FUNCTION PARAMETERS - Defines an optional parameter list
-func_params: TK_PR_WITH param_def_list;
-func_params: ;
 
-// PARAMETER LIST - A list of comma-separated defined parameters
-param_def_list: param
-param_def_list: param_def_list ',' param
+// FUNCTION PARAMETERS - Defines an optional parameter list
+func_params: TK_PR_WITH param_def_list
+           | /* empty */;
+
+// PARAMETER LIST - A list of comma-separated parameter definitions
+param_def_list: param_def
+              | param_def_list ',' param_def;
 
 // PARAMETER - Defines a single parameter with its type
-param: TK_ID TK_PR_AS type
+param_def: TK_ID TK_PR_AS type
+
 
 // FUNCTION BODY - A block of commands
 func_body: cmd_block;
@@ -80,37 +85,63 @@ func_body: cmd_block;
 // =========================== 
 
 // SIMPLE COMMAND - Can be any of the following commands
-simple_cmd: cmd_block;
-simple_cmd: var_decl var_init;
-simple_cmd: atr;
-simple_cmd: func_call;
+simple_cmd: cmd_block
+          | var_decl var_init
+          | atribution
+          | func_call
+          | return_cmd
+          | if_cmd else_cmd
+          | while_cmd;
 
-// COMMAND BLOCK - A optional [] delimited list of simple commands
-cmd_block: '[' cmd_list ']';
-cmd_block: '[' ']';
-cmd_list: simple_cmd;
-cmd_list: cmd_list simple_cmd;
+
+// COMMAND BLOCK - A optional [] delimited sequence of simple commands
+cmd_block: '[' cmd_list ']'
+         | '[' ']';
+
+cmd_list: simple_cmd
+        | cmd_list simple_cmd;
+
 
 // VARIABLE DECLARATION - Declares a variable with a specific type
 var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type
 
 // VARIABLE INITIALIZATION - Optionally initializes a variable with literal
-var_init: ;
-var_init: TK_PR_WITH literal;
+var_init: TK_PR_WITH literal
+        | /* empty */;
 
-// ATRIBUTION - 
-atr: TK_ID TK_PR_IS expr;
 
-// FUNCTION CALL - 
+// ATRIBUTION - Defines a atribution
+atribution: TK_ID TK_PR_IS expr;
+
+
+// FUNCTION CALL - Calls the function with TK_ID name with call_args
 func_call: TK_ID call_args;
 
-// CALL ARGUMENTS -
-call_args: '(' call_args_list ')';
-call_args: '(' ')';
+// CALL ARGUMENTS - A optional () delimited list of comma-separated arguments
+call_args: '(' call_args_list ')'
+         | '(' ')';
 
-// CALL ARGUMENTS LIST -
-call_args_list: expr;
-call_args_list: call_args_list ',' expr;
+call_args_list: expr
+              | call_args_list ',' expr;
+
+
+// RETURN COMMAND - Defines return statement with an expression and its type.
+return_cmd: TK_PR_RETURN expr TK_PR_AS type;
+
+
+// CONDITIONAL - Defines an if-else structure (optional else)
+if_cmd: TK_PR_IF '(' expr ')' cmd_block;
+
+else_cmd: TK_PR_ELSE cmd_block
+        | /* empty */;
+
+
+// REPETITION - Defines a while-loop structure
+while_cmd: TK_PR_WHILE '(' expr ')' cmd_block;
+
+
+
+
 
 
 // ===========================
