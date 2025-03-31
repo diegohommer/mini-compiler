@@ -1,8 +1,12 @@
 %define parse.error verbose
 
 %{
+#include <stdio.h>
+
 int yylex(void);
-void yyerror (char const *mensagem);
+void yyerror (char const *mensagem) {
+    printf("Erro de sintaxe: %s\n", mensagem);
+}
 %}
 
 %token TK_PR_AS
