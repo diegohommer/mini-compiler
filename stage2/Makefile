@@ -9,7 +9,7 @@ BDIR = bin
 CC = gcc
 FLEX = flex
 BISON = bison
-CFLAGS = -I$(IDIR)
+CFLAGS = -I$(IDIR) -fsanitize=address
 
 
 # Files

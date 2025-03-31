@@ -1,12 +1,10 @@
-%define parse.error verbose
-
 %{
 #include <stdio.h>
+#include <stdlib.h>
 
 int yylex(void);
-void yyerror (char const *mensagem) {
-    printf("Erro de sintaxe: %s\n", mensagem);
-}
+void yyerror (char const *mensagem);
+int get_line_number(void);
 %}
 
 %token TK_PR_AS
@@ -29,8 +27,14 @@ void yyerror (char const *mensagem) {
 %token TK_LI_FLOAT
 %token TK_ER
 
+%define parse.error verbose
+
 %%
 
 programa:
 
 %%
+
+void yyerror (char const *mensagem) {
+    printf("Na linha %d, houve o erro  \"%s\"\n", get_line_number(), mensagem);
+};
