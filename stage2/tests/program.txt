@@ -1,0 +1,31 @@
+declare global_x as int, declare global_y as float,
+
+// Returns a + b
+func1 returns int with a as int, b as float is [
+    declare result as int
+    result is a + b
+    return result as int
+],
+
+// Returns PI * 2
+func2 returns float is [
+    declare temp as float
+    temp is 3.14 * 2
+    return temp as float
+],
+
+// Main determines which function to execute depending on input x
+main returns int with x as int,y as float is [
+    global_x is x
+    global_y is y
+    
+    if (x > 3) [
+        y is func1(x, y)
+    ] else [
+        x is func2()
+    ]
+
+    while (x < 100) [
+        x is x + 1
+    ]
+];
