@@ -1,3 +1,8 @@
+# Definição do Makefile para compilação do projeto.
+# Desenvolvido por:
+#   Diego Hommerding Amorim - 00341793
+#   Gabriel Gabriel Kenji Yatsuda Ikuta - 00337491
+
 # Compiler and flags
 CC = gcc
 FLEX = flex

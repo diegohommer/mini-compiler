@@ -1,4 +1,10 @@
 %{
+/* 
+Definição do scanner para realização da análise léxica.
+Desenvolvido por:
+  Diego Hommerding Amorim - 00341793
+  Gabriel Gabriel Kenji Yatsuda Ikuta - 00337491
+*/
     #include "stdio.h"
     #include "parser.tab.h"
 %}
