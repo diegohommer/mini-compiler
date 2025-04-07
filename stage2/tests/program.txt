@@ -28,7 +28,7 @@ main returns float is [
     
     // Increment a by c while a is less than b
     while (a < b) [
-        a is add_floats(a, c)
+        a is add_floats(a, c) // Return the sum
     ]
     
     // If a exceeds b, subtract c to adjust

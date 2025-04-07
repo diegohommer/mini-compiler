@@ -9,7 +9,7 @@ BDIR = bin
 CC = gcc
 FLEX = flex
 BISON = bison
-CFLAGS = -I$(IDIR)
+CFLAGS = -I$(IDIR) -Wall -Werror
 
 
 # Files
@@ -23,6 +23,10 @@ EXEC = $(BDIR)/stage2.out
 
 # Default execution to all rules
 all: $(EXEC)
+
+# Rule to build include directory if it doesn't exist
+$(IDIR):
+	mkdir -p $(IDIR)
 
 # Rule to build bin directory if it doesn't exist
 $(BDIR):
@@ -49,4 +53,4 @@ $(EXEC): $(OBJ) | $(BDIR)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm -f $(ODIR)/*.o $(EXEC)
+	rm -f $(ODIR)/*.o $(EXEC) $(IDIR)/parser.tab.h $(SDIR)/lex.yy.c $(SDIR)/parser.tab.c

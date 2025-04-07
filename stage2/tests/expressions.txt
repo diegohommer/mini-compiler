@@ -10,7 +10,7 @@ my_function returns int is [
     c is c | d
 
     d is (a + b) * (c - d)
-    a is !b
+    a is !!!!!-+--b
 
     c is ((a + b) * (c - d) / 2.0) + ((d % a) & (b | c))
     d is (a * b) + (c / d) - (a % b) & (c | d)

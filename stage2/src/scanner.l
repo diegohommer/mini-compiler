@@ -3,7 +3,7 @@
     #include "parser.tab.h"
 %}
 
-%option noyywrap yylineno
+%option noyywrap yylineno noinput nounput
 
 %%
     /* IGNORE */
