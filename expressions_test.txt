@@ -9,8 +9,8 @@ my_function returns int is [
     b is a & b
     c is c | d
 
-    d is (a + b) * (c - d)
-    a is !b
+    d is -(a + b) * !(c - d)
+    a is !!!!!-+--b
 
     c is ((a + b) * (c - d) / 2.0) + ((d % a) & (b | c))
     d is (a * b) + (c / d) - (a % b) & (c | d)

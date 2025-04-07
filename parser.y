@@ -185,7 +185,7 @@ n2: n2 prec2_ops n1
 
 // PRECEDENCE 1 - Unary Operators (+, -, !)
 prec1_ops: '+' | '-' | '!';
-n1: prec1_ops n0
+n1: prec1_ops n1
   | n0;
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
