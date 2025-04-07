@@ -38,7 +38,7 @@ $(ODIR):
 
 # Rule to compile the .y bison file
 $(IDIR)/parser.tab.h $(SDIR)/parser.tab.c: $(SDIR)/parser.y | $(IDIR) $(ODIR)
-	$(BISON) -d --header=$(IDIR)/parser.tab.h -o $(SDIR)/parser.tab.c $<
+	$(BISON) -d -W --header=$(IDIR)/parser.tab.h -o $(SDIR)/parser.tab.c $<
 
 # Rule to compile the .l flex file
 $(SDIR)/lex.yy.c: $(SDIR)/scanner.l
