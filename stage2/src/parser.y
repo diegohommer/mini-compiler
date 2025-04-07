@@ -191,6 +191,6 @@ type: TK_PR_INT | TK_PR_FLOAT;
 
 %%
 
-void yyerror (char const *mensagem) {
-    printf("Na linha %d, houve o erro  \"%s\"\n", get_line_number(), mensagem);
-};
+void yyerror(const char *message) {
+    fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
+}
