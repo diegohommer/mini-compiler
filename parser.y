@@ -199,5 +199,5 @@ type: TK_PR_INT | TK_PR_FLOAT;
 %%
 
 void yyerror (char const *mensagem) {
-    printf("Na linha %d, houve o erro  \"%s\"\n", get_line_number(), mensagem);
+    printf("In line %d, there was an error:  \"%s\"\n", get_line_number(), mensagem);
 };

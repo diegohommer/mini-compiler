@@ -7,7 +7,7 @@
 CC = gcc
 FLEX = flex
 BISON = bison
-CFLAGS =
+CFLAGS = -Wall -Werror
 
 # Files
 _DEPS = parser.tab.h

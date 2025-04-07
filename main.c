@@ -1,6 +1,8 @@
 /*
 Função principal para realização da análise sintática.
 Desenvolvido por:
+  Professor Lucas Mello Schnorr
+Usado por:
   Diego Hommerding Amorim - 00341793
   Gabriel Gabriel Kenji Yatsuda Ikuta - 00337491
 */
