@@ -23,7 +23,7 @@ all: $(EXEC)
 
 # Rule to compile the .y bison file
 parser.tab.h parser.tab.c: parser.y
-	$(BISON) -d --header=parser.tab.h -o parser.tab.c $<
+	$(BISON) -d -W --header=parser.tab.h -o parser.tab.c $<
 
 # Rule to compile the .l flex file
 lex.yy.c: scanner.l

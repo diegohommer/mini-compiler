@@ -45,7 +45,7 @@ int get_line_number(void);
 
 // PROGRAM - A optional list of elements followed by a semicolon
 program: prog_list ';';
-       | /* empty */;
+       | %empty;
 
 
 // PROGRAM LIST - A list of comma-separated elements
@@ -72,7 +72,7 @@ func_header: TK_ID TK_PR_RETURNS type;
 
 // FUNCTION PARAMETERS - Defines an optional parameter list
 func_params: TK_PR_WITH param_def_list
-           | /* empty */;
+           | %empty;
 
 // PARAMETER LIST - A list of comma-separated parameter definitions
 param_def_list: param_def
@@ -114,7 +114,7 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type
 
 // VARIABLE INITIALIZATION - Optionally initializes a variable with literal
 var_init: TK_PR_WITH literal
-        | /* empty */;
+        | %empty;
 
 
 // ATRIBUTION - Defines a atribution
@@ -140,7 +140,7 @@ return_cmd: TK_PR_RETURN exp TK_PR_AS type;
 if_cmd: TK_PR_IF '(' exp ')' cmd_block;
 
 else_cmd: TK_PR_ELSE cmd_block
-        | /* empty */;
+        | %empty;
 
 
 // REPETITION - Defines a while-loop structure
