@@ -1,6 +1,7 @@
 %{ 
   #include <stdio.h>
   #include <stdlib.h>
+  #include <string.h>
   #include <asd.h>
 
   int yylex(void);
@@ -45,9 +46,8 @@
 %token <lexical_value> TK_LI_FLOAT
 %token TK_ER
 
-
-
-
+%type <tree> cmd_block cmd_list call_args call_args_list
+%type <tree> atribution func_call return_cmd if_else_cmd else_cmd while_cmd
 %type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops
 %type <str> prec5_ops prec4_ops prec3_ops prec2_ops prec1_ops
 
@@ -114,7 +114,7 @@ simple_cmd: cmd_block
           | atribution
           | func_call
           | return_cmd
-          | if_cmd else_cmd
+          | if_else_cmd 
           | while_cmd;
 
 
@@ -136,11 +136,23 @@ var_init: TK_PR_WITH TK_LI_INT
 
 
 // ATRIBUTION - Defines an atribution
-atribution: TK_ID TK_PR_IS exp;
+atribution: TK_ID TK_PR_IS exp { 
+  $$ = asd_new("is"); 
+  asd_add_child($$, asd_new($1.value)); 
+  asd_add_child($$, $3); 
+};
 
 
 // FUNCTION CALL - Calls the function with TK_ID name with call_args
-func_call: TK_ID call_args;
+func_call: TK_ID call_args {
+  // Build "call <function_id>" string
+  char *buffer = malloc(strlen("call ") + strlen($1.value) + 1);
+  strcpy(buffer, "call ");
+  strcat(buffer, $1.value);
+  $$ = asd_new(buffer);
+  asd_add_child($$, $2); 
+  free(buffer);  
+};
 
 // CALL ARGUMENTS - A optional () delimited list of comma-separated arguments
 call_args: '(' call_args_list ')'
@@ -151,18 +163,31 @@ call_args_list: exp
 
 
 // RETURN COMMAND - Defines return statement with an expression and its type.
-return_cmd: TK_PR_RETURN exp TK_PR_AS type;
+return_cmd: TK_PR_RETURN exp TK_PR_AS type { 
+  $$ = asd_new("return"); 
+  asd_add_child($$, $2); 
+};
 
 
 // CONDITIONAL - Defines an if-else structure (optional else)
-if_cmd: TK_PR_IF '(' exp ')' cmd_block;
+if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
+  $$ = asd_new("if"); 
+  asd_add_child($$, $3); 
+  asd_add_child($$, $5);
+  if($6 != NULL) 
+    asd_add_child($$, $6);
+};
 
-else_cmd: TK_PR_ELSE cmd_block
-        | %empty;
+else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
+        | %empty { $$ = NULL; };
 
 
 // REPETITION - Defines a while-loop structure
-while_cmd: TK_PR_WHILE '(' exp ')' cmd_block;
+while_cmd: TK_PR_WHILE '(' exp ')' cmd_block { 
+  $$ = asd_new("while"); 
+  asd_add_child($$, $3); 
+  asd_add_child($$, $5); 
+};
 
 
 
