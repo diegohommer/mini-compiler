@@ -6,11 +6,8 @@
 int yylex(void);
 void yyerror (char const *mensagem);
 int get_line_number(void);
-extern asd_tree_t *arvore;
+extern asd_tree_t *tree;
 
-  typedef {
-    //campos
-  } valor_t;
 %}
 
 %token TK_PR_AS
