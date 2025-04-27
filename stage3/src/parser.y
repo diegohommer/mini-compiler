@@ -1,4 +1,4 @@
-%{
+%{ 
   #include <stdio.h>
   #include <stdlib.h>
   #include <asd.h>
@@ -15,6 +15,9 @@
 %}
 
 %union {
+  char* str;
+  asd_tree_t* tree;
+
   struct {
     int line;
     int type;
@@ -37,10 +40,16 @@
 %token TK_OC_GE
 %token TK_OC_EQ
 %token TK_OC_NE
-%token TK_ID
-%token TK_LI_INT
-%token TK_LI_FLOAT
+%token <lexical_value> TK_ID
+%token <lexical_value> TK_LI_INT
+%token <lexical_value> TK_LI_FLOAT
 %token TK_ER
+
+
+
+
+%type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops
+%type <str> prec5_ops prec4_ops prec3_ops prec2_ops prec1_ops
 
 %define parse.error verbose
 %start program
@@ -52,7 +61,7 @@
 // =========================== 
 
 // PROGRAM - A optional list of elements followed by a semicolon
-program: prog_list ';';
+program: prog_list ';'
        | %empty;
 
 
@@ -87,7 +96,7 @@ param_def_list: param_def
               | param_def_list ',' param_def;
 
 // PARAMETER - Defines a single parameter with its type
-param_def: TK_ID TK_PR_AS type
+param_def: TK_ID TK_PR_AS type;
 
 
 // FUNCTION BODY - A block of commands
@@ -118,10 +127,11 @@ cmd_list: simple_cmd
 
 
 // VARIABLE DECLARATION - Declares a variable with a specific type
-var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type
+var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type;
 
 // VARIABLE INITIALIZATION - Optionally initializes a variable with literal
-var_init: TK_PR_WITH literal
+var_init: TK_PR_WITH TK_LI_INT
+        | TK_PR_WITH TK_LI_FLOAT
         | %empty;
 
 
@@ -161,47 +171,73 @@ while_cmd: TK_PR_WHILE '(' exp ')' cmd_block;
 // =========================== 
 
 // EXPRESSION START
-exp: n7;
+exp: n7 { $$ = $1; };
+
 
 // PRECEDENCE 7 (LOWEST) - Bitwise OR
-n7: n7 '|' n6
-  | n6;
+n7: n7 '|' n6 { $$ = asd_new("|"); asd_add_child($$, $1); asd_add_child($$, $3); }
+  | n6 { $$ = $1; };
+
 
 // PRECEDENCE 6 - Bitwise AND
-n6: n6 '&' n5
-  | n5;
+n6: n6 '&' n5 { $$ = asd_new("&"); asd_add_child($$, $1); asd_add_child($$, $3); }
+  | n5 { $$ = $1; };
+
 
 // PRECEDENCE 5 - Comparison (==, !=)
-prec5_ops: TK_OC_EQ | TK_OC_NE;
-n5: n5 prec5_ops n4
-  | n4;
+prec5_ops: TK_OC_EQ { $$ = "=="; } 
+         | TK_OC_NE { $$ = "!="; };
+
+n5: n5 prec5_ops n4 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$, $3); }
+  | n4 { $$ = $1; };
+
 
 // PRECEDENCE 4 - Comparison (<, >, <=, >=)
-prec4_ops: '<' | '>' | TK_OC_LE | TK_OC_GE;
-n4: n4 prec4_ops n3
-  | n3;
+prec4_ops: '<' { $$ = "<"; } 
+         | '>' { $$ = ">"; } 
+         | TK_OC_LE { $$ = "<="; } 
+         | TK_OC_GE { $$ = ">="; };
+
+n4: n4 prec4_ops n3 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$, $3); }
+  | n3 { $$ = $1; };   
+
 
 // PRECEDENCE 3 - Addition & Subtraction (+, -)
-prec3_ops: '+' | '-';
-n3: n3 prec3_ops n2
-  | n2;
+prec3_ops: '+' { $$ = "+"; } 
+         | '-' { $$ = "-"; };
+
+n3: n3 prec3_ops n2 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$, $3); }
+  | n2 { $$ = $1; };
+
 
 // PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %)
-prec2_ops: '*' | '/' | '%';
-n2: n2 prec2_ops n1
-  | n1;
+prec2_ops: '*' { $$ = "*"; } 
+         | '/' { $$ = "/"; } 
+         | '%' { $$ = "%"; };
+
+n2: n2 prec2_ops n1 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$, $3); }
+  | n1 { $$ = $1; };
+
 
 // PRECEDENCE 1 - Unary Operators (+, -, !)
-prec1_ops: '+' | '-' | '!';
-n1: prec1_ops n1
-  | n0;
+prec1_ops: '+' { $$ = "+"; } 
+         | '-' { $$ = "-"; } 
+         | '!' { $$ = "!"; };
+
+n1: prec1_ops n1 { $$ = asd_new($1); asd_add_child($$, $2); }
+  | n0 { $$ = $1; };
+
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
-prec0_ops: func_call | TK_ID | literal | '(' exp ')';
-n0: prec0_ops;
+prec0_ops: func_call { $$ = $1; } 
+         | TK_ID { $$ = asd_new($1.value); } 
+         | TK_LI_INT { $$ = asd_new($1.value); }
+         | TK_LI_FLOAT { $$ = asd_new($1.value); }
+         | '(' exp ')'{ $$ = $2; };
 
-// LITERAL AND TYPE TOKENS
-literal: TK_LI_INT | TK_LI_FLOAT;
+n0: prec0_ops { $$ = $1; };
+
+// TYPE TOKENS
 type: TK_PR_INT | TK_PR_FLOAT;
 
 %%
