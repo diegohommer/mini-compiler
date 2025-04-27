@@ -1,6 +1,25 @@
 %{
     #include "stdio.h"
     #include "parser.tab.h"
+
+    typedef enum {
+        IDENTIFIER,
+        LITERAL
+    } TokenType;
+
+    typedef struct {
+        int line;
+        TokenType type;
+        char* value;
+    } lexical_value;
+
+    extern lexical_value yylval;
+
+    void assign_token_value(TokenType type){
+        yylval.line = get_line_number();
+        yylval.type = type;
+        yylval.value = strdup(yytext);
+    }
 %}
 
 %option noyywrap yylineno noinput nounput
@@ -33,9 +52,9 @@ with    return TK_PR_WITH;
 \!\=      return TK_OC_NE;
 
     /* IDENTIFIERS AND LITERALS */
-[a-z_][a-z0-9_]* return TK_ID;
-[0-9]+  return TK_LI_INT;
-[0-9]*\.[0-9]+ return TK_LI_FLOAT;
+[a-z_][a-z0-9_]* { assign_token_value(IDENTIFIER); return TK_ID; };
+[0-9]+ { assign_token_value(LITERAL); return TK_LI_INT; };
+[0-9]*\.[0-9]+ { assign_token_value(LITERAL); return TK_LI_FLOAT; };
 
 .   return TK_ER;
 %%
