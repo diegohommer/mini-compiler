@@ -16,7 +16,7 @@ CFLAGS = -I$(IDIR) -Wall -Werror -fsanitize=address
 _DEPS = parser.tab.h asd.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o lex.yy.o parser.tab.o
+_OBJ = main.o lex.yy.o parser.tab.o asd.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 EXEC = $(BDIR)/stage2.out
