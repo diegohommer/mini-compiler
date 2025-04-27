@@ -46,8 +46,8 @@
 %token <lexical_value> TK_LI_FLOAT
 %token TK_ER
 
-%type <tree> var_decl var_init
-%type <tree> prog_list cmd_block cmd_list call_args call_args_list
+%type <tree> def_func func_header func_params func_body  var_decl var_init
+%type <tree> prog_list element cmd_block cmd_list call_args call_args_list
 %type <tree> simple_cmd atribution func_call return_cmd if_else_cmd else_cmd while_cmd
 %type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops
 %type <str> prec5_ops prec4_ops prec3_ops prec2_ops prec1_ops
@@ -62,17 +62,18 @@
 // =========================== 
 
 // PROGRAM - A optional list of elements followed by a semicolon
-program: prog_list ';'
-       | %empty;
+program: prog_list ';' { tree = $1; };
+       | %empty { tree = NULL; };
 
 
 // PROGRAM LIST - A list of comma-separated elements
-prog_list: element;
-         | prog_list ',' element;
+prog_list: element { $$ = $1; }
+         | prog_list ',' element { asd_add_child($$, $3); $$ = $1; };
 
 
 // ELEMENT - Either a function definition or variable declaration
-element: def_func | var_decl;
+element: def_func { $$ = $1; }
+       | var_decl { $$ = $1; };
 
 
 
@@ -81,16 +82,16 @@ element: def_func | var_decl;
 // =========================== 
 
 // FUNCTION DEFINITION - A header, optinal list of params and a body.
-def_func: func_header func_params TK_PR_IS func_body;
+def_func: func_header func_params TK_PR_IS func_body { $$ = $1; asd_add_child($$, $4); };
 
 
 // FUNCTION HEADER - Defines the function name and return type.
-func_header: TK_ID TK_PR_RETURNS type;
+func_header: TK_ID TK_PR_RETURNS type { $$ = asd_new($1.value); };
 
 
 // FUNCTION PARAMETERS - Defines an optional parameter list
-func_params: TK_PR_WITH param_def_list
-           | %empty;
+func_params: TK_PR_WITH param_def_list { $$ = NULL; }
+           | %empty { $$ = NULL; };
 
 // PARAMETER LIST - A list of comma-separated parameter definitions
 param_def_list: param_def
@@ -101,7 +102,7 @@ param_def: TK_ID TK_PR_AS type;
 
 
 // FUNCTION BODY - A block of commands
-func_body: cmd_block;
+func_body: cmd_block { $$ = $1; };
 
 
 
