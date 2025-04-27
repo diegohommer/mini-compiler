@@ -1,14 +1,26 @@
 %{
-#include <stdio.h>
-#include <stdlib.h>
-#include <asd.h>
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <asd.h>
 
-int yylex(void);
-void yyerror (char const *mensagem);
-int get_line_number(void);
-extern asd_tree_t *tree;
+  int yylex(void);
+  void yyerror (char const *mensagem);
+  int get_line_number(void);
+  extern asd_tree_t *tree;
 
+  enum TokenType {
+      IDENTIFIER = 1,
+      LITERAL = 2
+  };
 %}
+
+%union {
+  struct {
+    int line;
+    int type;
+    char* value;
+  } lexical_value;
+}
 
 %token TK_PR_AS
 %token TK_PR_DECLARE
