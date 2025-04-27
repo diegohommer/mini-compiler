@@ -46,8 +46,9 @@
 %token <lexical_value> TK_LI_FLOAT
 %token TK_ER
 
-%type <tree> cmd_block cmd_list call_args call_args_list
-%type <tree> atribution func_call return_cmd if_else_cmd else_cmd while_cmd
+%type <tree> var_decl var_init
+%type <tree> prog_list cmd_block cmd_list call_args call_args_list
+%type <tree> simple_cmd atribution func_call return_cmd if_else_cmd else_cmd while_cmd
 %type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops
 %type <str> prec5_ops prec4_ops prec3_ops prec2_ops prec1_ops
 
@@ -109,30 +110,34 @@ func_body: cmd_block;
 // =========================== 
 
 // SIMPLE COMMAND - Can be any of the following commands
-simple_cmd: cmd_block
-          | var_decl var_init
-          | atribution
-          | func_call
-          | return_cmd
-          | if_else_cmd 
-          | while_cmd;
+simple_cmd: cmd_block { $$ = $1; }
+          | var_decl { $$ = $1; } 
+          | atribution { $$ = $1; }
+          | func_call { $$ = $1; }
+          | return_cmd { $$ = $1; }
+          | if_else_cmd { $$ = $1; }
+          | while_cmd { $$ = $1; };
 
 
 // COMMAND BLOCK - A optional [] delimited sequence of simple commands
-cmd_block: '[' cmd_list ']'
-         | '[' ']';
+cmd_block: '[' cmd_list ']' { $$ = $2; }
+         | '[' ']' { $$ = NULL; };
 
-cmd_list: simple_cmd
-        | cmd_list simple_cmd;
+cmd_list: simple_cmd { $$ = $1; }
+        | cmd_list simple_cmd { asd_add_child($$, $2); $$ = $1; };
 
 
 // VARIABLE DECLARATION - Declares a variable with a specific type
-var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type;
+var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; };
+        | TK_PR_DECLARE TK_ID TK_PR_AS type var_init { 
+            $$ = asd_new("with");
+            asd_add_child($$, asd_new($2.value)); 
+            asd_add_child($$, $5); 
+          }
 
 // VARIABLE INITIALIZATION - Optionally initializes a variable with literal
-var_init: TK_PR_WITH TK_LI_INT
-        | TK_PR_WITH TK_LI_FLOAT
-        | %empty;
+var_init: TK_PR_WITH TK_LI_INT { $$ = asd_new($2.value); }
+        | TK_PR_WITH TK_LI_FLOAT { $$ = asd_new($2.value); };
 
 
 // ATRIBUTION - Defines an atribution
@@ -155,11 +160,11 @@ func_call: TK_ID call_args {
 };
 
 // CALL ARGUMENTS - A optional () delimited list of comma-separated arguments
-call_args: '(' call_args_list ')'
-         | '(' ')';
+call_args: '(' call_args_list ')' { $$ = $2; }
+         | '(' ')' { $$ = NULL; };
 
-call_args_list: exp
-              | call_args_list ',' exp;
+call_args_list: exp { $$ = $1; }
+              | call_args_list ',' exp { asd_add_child($$, $3); $$ = $1; };
 
 
 // RETURN COMMAND - Defines return statement with an expression and its type.
