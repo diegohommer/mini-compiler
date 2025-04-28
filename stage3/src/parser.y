@@ -68,7 +68,16 @@ program: prog_list ';' { tree = $1; };
 
 // PROGRAM LIST - A list of comma-separated elements
 prog_list: element { $$ = $1; }
-         | prog_list ',' element { asd_add_child($$, $3); $$ = $1; };
+         | element ',' prog_list { 
+            if($1 == NULL){
+              $$ = $3;
+            }else {
+              if($3 != NULL){
+                asd_add_child($1, $3);
+              }
+              $$ = $1;
+            }
+         };
 
 
 // ELEMENT - Either a function definition or variable declaration
@@ -82,11 +91,16 @@ element: def_func { $$ = $1; }
 // =========================== 
 
 // FUNCTION DEFINITION - A header, optinal list of params and a body.
-def_func: func_header func_params TK_PR_IS func_body { $$ = $1; asd_add_child($$, $4); };
+def_func: func_header func_params TK_PR_IS func_body { 
+  $$ = $1;
+  if($4 != NULL){ 
+    asd_add_child($$, $4);
+  }
+};
 
 
 // FUNCTION HEADER - Defines the function name and return type.
-func_header: TK_ID TK_PR_RETURNS type { $$ = asd_new($1.value); };
+func_header: TK_ID TK_PR_RETURNS type { $$ = asd_new($1.value); free($1.value); };
 
 
 // FUNCTION PARAMETERS - Defines an optional parameter list
@@ -98,7 +112,7 @@ param_def_list: param_def
               | param_def_list ',' param_def;
 
 // PARAMETER - Defines a single parameter with its type
-param_def: TK_ID TK_PR_AS type;
+param_def: TK_ID TK_PR_AS type { free($1.value); };
 
 
 // FUNCTION BODY - A block of commands
@@ -125,20 +139,30 @@ cmd_block: '[' cmd_list ']' { $$ = $2; }
          | '[' ']' { $$ = NULL; };
 
 cmd_list: simple_cmd { $$ = $1; }
-        | cmd_list simple_cmd { asd_add_child($$, $2); $$ = $1; };
+        | simple_cmd cmd_list {
+            if($1 == NULL){
+              $$ = $2;
+            }else {
+              if($2 != NULL){
+                asd_add_child($1, $2);
+              }
+              $$ = $1;
+            }
+          };
 
 
 // VARIABLE DECLARATION - Declares a variable with a specific type
-var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; };
+var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; free($2.value); };
         | TK_PR_DECLARE TK_ID TK_PR_AS type var_init { 
             $$ = asd_new("with");
-            asd_add_child($$, asd_new($2.value)); 
-            asd_add_child($$, $5); 
+            asd_add_child($$, asd_new($2.value));
+            asd_add_child($$, $5);
+            free($2.value);
           }
 
 // VARIABLE INITIALIZATION - Optionally initializes a variable with literal
-var_init: TK_PR_WITH TK_LI_INT { $$ = asd_new($2.value); }
-        | TK_PR_WITH TK_LI_FLOAT { $$ = asd_new($2.value); };
+var_init: TK_PR_WITH TK_LI_INT { $$ = asd_new($2.value); free($2.value); }
+        | TK_PR_WITH TK_LI_FLOAT { $$ = asd_new($2.value); free($2.value); };
 
 
 // ATRIBUTION - Defines an atribution
@@ -146,18 +170,24 @@ atribution: TK_ID TK_PR_IS exp {
   $$ = asd_new("is"); 
   asd_add_child($$, asd_new($1.value)); 
   asd_add_child($$, $3); 
+  free($1.value);
 };
 
 
 // FUNCTION CALL - Calls the function with TK_ID name with call_args
 func_call: TK_ID call_args {
   // Build "call <function_id>" string
-  char *buffer = malloc(strlen("call ") + strlen($1.value) + 1);
-  strcpy(buffer, "call ");
-  strcat(buffer, $1.value);
+  int len = strlen("call ") + strlen($1.value) + 1;
+  char *buffer = malloc(len);
+  snprintf(buffer, len, "call %s", $1.value);
+
   $$ = asd_new(buffer);
-  asd_add_child($$, $2); 
-  free(buffer);  
+  free(buffer);
+  free($1.value);
+
+  if($2 != NULL) {
+    asd_add_child($$, $2);
+  }
 };
 
 // CALL ARGUMENTS - A optional () delimited list of comma-separated arguments
@@ -178,10 +208,13 @@ return_cmd: TK_PR_RETURN exp TK_PR_AS type {
 // CONDITIONAL - Defines an if-else structure (optional else)
 if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
   $$ = asd_new("if"); 
-  asd_add_child($$, $3); 
-  asd_add_child($$, $5);
-  if($6 != NULL) 
+  asd_add_child($$, $3);
+  if($5 != NULL){
+    asd_add_child($$, $5);
+  }
+  if($6 != NULL){
     asd_add_child($$, $6);
+  }
 };
 
 else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
@@ -261,9 +294,9 @@ n1: prec1_ops n1 { $$ = asd_new($1); asd_add_child($$, $2); }
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
 prec0_ops: func_call { $$ = $1; } 
-         | TK_ID { $$ = asd_new($1.value); } 
-         | TK_LI_INT { $$ = asd_new($1.value); }
-         | TK_LI_FLOAT { $$ = asd_new($1.value); }
+         | TK_ID { $$ = asd_new($1.value); free($1.value); } 
+         | TK_LI_INT { $$ = asd_new($1.value); free($1.value); }
+         | TK_LI_FLOAT { $$ = asd_new($1.value); free($1.value); }
          | '(' exp ')'{ $$ = $2; };
 
 n0: prec0_ops { $$ = $1; };
