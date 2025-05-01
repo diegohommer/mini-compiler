@@ -1,7 +1,17 @@
+/*
+Estrutura e declaração de funções para a construção e manipulação da Árvore Sintática Abstrata (AST).
+Desenvolvido por:
+  Professor Lucas Mello Schnorr
+Usado por:
+  Diego Hommerding Amorim - 00341793
+  Gabriel Gabriel Kenji Yatsuda Ikuta - 00337491
+*/
+
 #ifndef _ASD_H_
 #define _ASD_H_
 
-typedef struct asd_tree {
+typedef struct asd_tree
+{
   char *label;
   int number_of_children;
   struct asd_tree **children;

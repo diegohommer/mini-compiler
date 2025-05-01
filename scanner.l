@@ -1,6 +1,22 @@
 %{
+    /* 
+    Definição do scanner para realização da análise léxica.
+    Desenvolvido por:
+        Diego Hommerding Amorim - 00341793
+        Gabriel Gabriel Kenji Yatsuda Ikuta - 00337491
+    */
+
     #include "stdio.h"
+    #include "asd.h"
     #include "parser.tab.h"
+
+    enum TokenType {
+        IDENTIFIER = 1,
+        LITERAL = 2
+    };
+
+    int get_line_number();
+    void assign_token_value(int type);
 %}
 
 %option noyywrap yylineno noinput nounput
@@ -33,13 +49,19 @@ with    return TK_PR_WITH;
 \!\=      return TK_OC_NE;
 
     /* IDENTIFIERS AND LITERALS */
-[a-z_][a-z0-9_]* return TK_ID;
-[0-9]+  return TK_LI_INT;
-[0-9]*\.[0-9]+ return TK_LI_FLOAT;
+[a-z_][a-z0-9_]* { assign_token_value(IDENTIFIER); return TK_ID; };
+[0-9]+ { assign_token_value(LITERAL); return TK_LI_INT; };
+[0-9]*\.[0-9]+ { assign_token_value(LITERAL); return TK_LI_FLOAT; }
 
 .   return TK_ER;
 %%
 
 int get_line_number(){
     return yylineno;
+}
+
+void assign_token_value(int type){
+    yylval.lexical_value.line = get_line_number();
+    yylval.lexical_value.type = type;
+    yylval.lexical_value.value = strdup(yytext);
 }
