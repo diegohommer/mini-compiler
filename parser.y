@@ -106,7 +106,7 @@ func_params: TK_PR_WITH param_def_list { $$ = NULL; }
 
 // PARAMETER LIST - A list of comma-separated parameter definitions
 param_def_list: param_def
-              | param_def_list ',' param_def;
+              | param_def ',' param_def_list;
 
 // PARAMETER - Defines a single parameter with its type
 param_def: TK_ID TK_PR_AS type { free($1->value); free($1); };
@@ -189,7 +189,7 @@ call_args: '(' call_args_list ')' { $$ = $2; }
          | '(' ')' { $$ = NULL; };
 
 call_args_list: exp { $$ = $1; }
-              | call_args_list ',' exp { asd_add_child($$, $3); $$ = $1; };
+              | exp ',' call_args_list { asd_add_child($$, $3); $$ = $1; };
 
 
 // RETURN COMMAND - Defines return statement with an expression and its type.

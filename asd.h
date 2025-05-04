@@ -1,30 +1,22 @@
 /*
-Estrutura e declaração de funções para a construção e manipulação da Árvore Sintática Abstrata (AST).
-Desenvolvido por:
-  Professor Lucas Mello Schnorr
-Usado e adaptado por:
-  Diego Hommerding Amorim - 00341793
-  Gabriel Gabriel Kenji Yatsuda Ikuta - 00337491
+Estrutura e declaração de funções para a construção e manipulação da Árvore
+Sintática Abstrata (AST). Desenvolvido por: Professor Lucas Mello Schnorr Usado
+e adaptado por: Diego Hommerding Amorim - 00341793 Gabriel Gabriel Kenji Yatsuda
+Ikuta - 00337491
 */
 
 #ifndef _ASD_H_
 #define _ASD_H_
 
-enum TokenType
-{
-  IDENTIFIER = 1,
-  LITERAL = 2
-};
+enum TokenType { IDENTIFIER = 1, LITERAL = 2 };
 
-typedef struct lexical_value
-{
+typedef struct lexical_value {
   int line;
   int type;
   char *value;
 } lexical_value_t;
 
-typedef struct asd_tree
-{
+typedef struct asd_tree {
   char *label;
   int number_of_children;
   struct asd_tree **children;
@@ -32,7 +24,8 @@ typedef struct asd_tree
 } asd_tree_t;
 
 /*
- * Function asd_new, creates a node without children with the given label and payload.
+ * Function asd_new, creates a node without children with the given label and
+ * payload.
  */
 asd_tree_t *asd_new(const char *label, lexical_value_t *payload);
 
@@ -57,7 +50,8 @@ void asd_print(asd_tree_t *tree);
 void asd_print_graphviz(asd_tree_t *tree);
 
 /*
- * Function asd_debug_graphviz, like asd_print_graphviz but includes line and type info.
+ * Function asd_debug_graphviz, like asd_print_graphviz but includes line and
+ * type info.
  */
 void asd_debug_graphviz(asd_tree_t *tree);
 
