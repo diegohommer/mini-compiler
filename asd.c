@@ -12,7 +12,7 @@ Usado por:
 #include <stdio.h>
 #include "asd.h"
 
-asd_tree_t *asd_new(const char *label)
+asd_tree_t *asd_new(const char *label, lexical_value_t *payload)
 {
   asd_tree_t *ret = NULL;
   ret = calloc(1, sizeof(asd_tree_t));
@@ -21,6 +21,7 @@ asd_tree_t *asd_new(const char *label)
     ret->label = strdup(label);
     ret->number_of_children = 0;
     ret->children = NULL;
+    ret->lexical_payload = payload;
   }
   return ret;
 }
@@ -36,6 +37,11 @@ void asd_free(asd_tree_t *tree)
     }
     free(tree->children);
     free(tree->label);
+    if (tree->lexical_payload != NULL)
+    {
+      free(tree->lexical_payload->value);
+    }
+    free(tree->lexical_payload);
     free(tree);
   }
   else
@@ -90,11 +96,10 @@ void asd_print(asd_tree_t *tree)
 
 static void _asd_print_graphviz(FILE *foutput, asd_tree_t *tree)
 {
-  int i;
   if (tree != NULL)
   {
     fprintf(foutput, "  %ld [ label=\"%s\" ];\n", (long)tree, tree->label);
-    for (i = 0; i < tree->number_of_children; i++)
+    for (int i = 0; i < tree->number_of_children; i++)
     {
       fprintf(foutput, "  %ld -> %ld;\n", (long)tree, (long)tree->children[i]);
       _asd_print_graphviz(foutput, tree->children[i]);
@@ -106,6 +111,45 @@ static void _asd_print_graphviz(FILE *foutput, asd_tree_t *tree)
   }
 }
 
+static void _asd_debug_graphviz(FILE *foutput, asd_tree_t *tree)
+{
+  if (tree != NULL)
+  {
+    if (tree->lexical_payload != NULL)
+    {
+      int needed_len = snprintf(NULL, 0, "%s\n (line=%d, type=%d)",
+                                tree->label,
+                                tree->lexical_payload->line,
+                                tree->lexical_payload->type);
+
+      char *label_with_info = malloc(needed_len + 1);
+      if (!label_with_info)
+      {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+      }
+
+      snprintf(label_with_info, needed_len + 1, "%s\n (line=%d, type=%d)",
+               tree->label,
+               tree->lexical_payload->line,
+               tree->lexical_payload->type);
+
+      fprintf(foutput, "  %ld [ label=\"%s\" ];\n", (long)tree, label_with_info);
+      free(label_with_info);
+    }
+    else
+    {
+      fprintf(foutput, "  %ld [ label=\"%s\" ];\n", (long)tree, tree->label);
+    }
+
+    for (int i = 0; i < tree->number_of_children; i++)
+    {
+      fprintf(foutput, "  %ld -> %ld;\n", (long)tree, (long)tree->children[i]);
+      _asd_debug_graphviz(foutput, tree->children[i]);
+    }
+  }
+}
+
 void asd_print_graphviz(asd_tree_t *tree)
 {
   FILE *foutput = stdout;
@@ -113,6 +157,21 @@ void asd_print_graphviz(asd_tree_t *tree)
   {
     fprintf(foutput, "digraph grafo {\n");
     _asd_print_graphviz(foutput, tree);
+    fprintf(foutput, "}\n");
+  }
+  else
+  {
+    printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+  }
+}
+
+void asd_debug_graphviz(asd_tree_t *tree)
+{
+  FILE *foutput = stdout;
+  if (tree != NULL)
+  {
+    fprintf(foutput, "digraph grafo {\n");
+    _asd_debug_graphviz(foutput, tree);
     fprintf(foutput, "}\n");
   }
   else

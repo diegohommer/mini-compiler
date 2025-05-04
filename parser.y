@@ -15,22 +15,12 @@
   void yyerror (char const *mensagem);
   int get_line_number(void);
   extern asd_tree_t *tree;
-
-  enum TokenType {
-      IDENTIFIER = 1,
-      LITERAL = 2
-  };
 %}
 
 %union {
   char* str;
   asd_tree_t* tree;
-
-  struct {
-    int line;
-    int type;
-    char* value;
-  } lexical_value;
+  lexical_value_t* lexical_value;
 }
 
 %token TK_PR_AS
@@ -107,7 +97,7 @@ def_func: func_header func_params TK_PR_IS func_body {
 
 
 // FUNCTION HEADER - Defines the function name and return type.
-func_header: TK_ID TK_PR_RETURNS type { $$ = asd_new($1.value); free($1.value); };
+func_header: TK_ID TK_PR_RETURNS type { $$ = asd_new($1->value, $1); };
 
 
 // FUNCTION PARAMETERS - Defines an optional parameter list
@@ -119,7 +109,7 @@ param_def_list: param_def
               | param_def_list ',' param_def;
 
 // PARAMETER - Defines a single parameter with its type
-param_def: TK_ID TK_PR_AS type { free($1.value); };
+param_def: TK_ID TK_PR_AS type { free($1->value); free($1); };
 
 
 // FUNCTION BODY - A block of commands
@@ -159,38 +149,35 @@ cmd_list: simple_cmd { $$ = $1; }
 
 
 // VARIABLE DECLARATION - Declares a variable with a specific type
-var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; free($2.value); };
+var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; free($2->value); free($2); };
         | TK_PR_DECLARE TK_ID TK_PR_AS type var_init { 
-            $$ = asd_new("with");
-            asd_add_child($$, asd_new($2.value));
+            $$ = asd_new("with", NULL);
+            asd_add_child($$, asd_new($2->value, $2));
             asd_add_child($$, $5);
-            free($2.value);
           }
 
 // VARIABLE INITIALIZATION - Optionally initializes a variable with literal
-var_init: TK_PR_WITH TK_LI_INT { $$ = asd_new($2.value); free($2.value); }
-        | TK_PR_WITH TK_LI_FLOAT { $$ = asd_new($2.value); free($2.value); };
+var_init: TK_PR_WITH TK_LI_INT { $$ = asd_new($2->value, $2); }
+        | TK_PR_WITH TK_LI_FLOAT { $$ = asd_new($2->value, $2); };
 
 
 // ATRIBUTION - Defines an atribution
 atribution: TK_ID TK_PR_IS exp { 
-  $$ = asd_new("is"); 
-  asd_add_child($$, asd_new($1.value)); 
-  asd_add_child($$, $3); 
-  free($1.value);
+  $$ = asd_new("is", NULL); 
+  asd_add_child($$, asd_new($1->value, $1)); 
+  asd_add_child($$, $3);
 };
 
 
 // FUNCTION CALL - Calls the function with TK_ID name with call_args
 func_call: TK_ID call_args {
   // Build "call <function_id>" string
-  int len = strlen("call ") + strlen($1.value) + 1;
+  int len = strlen("call ") + strlen($1->value) + 1;
   char *buffer = malloc(len);
-  snprintf(buffer, len, "call %s", $1.value);
+  snprintf(buffer, len, "call %s", $1->value);
 
-  $$ = asd_new(buffer);
+  $$ = asd_new(buffer, $1);
   free(buffer);
-  free($1.value);
 
   if($2 != NULL) {
     asd_add_child($$, $2);
@@ -207,14 +194,14 @@ call_args_list: exp { $$ = $1; }
 
 // RETURN COMMAND - Defines return statement with an expression and its type.
 return_cmd: TK_PR_RETURN exp TK_PR_AS type { 
-  $$ = asd_new("return"); 
+  $$ = asd_new("return", NULL); 
   asd_add_child($$, $2); 
 };
 
 
 // CONDITIONAL - Defines an if-else structure (optional else)
 if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
-  $$ = asd_new("if"); 
+  $$ = asd_new("if", NULL); 
   asd_add_child($$, $3);
   if($5 != NULL){
     asd_add_child($$, $5);
@@ -230,7 +217,7 @@ else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
 
 // REPETITION - Defines a while-loop structure
 while_cmd: TK_PR_WHILE '(' exp ')' cmd_block { 
-  $$ = asd_new("while"); 
+  $$ = asd_new("while", NULL); 
   asd_add_child($$, $3); 
   asd_add_child($$, $5); 
 };
@@ -246,12 +233,12 @@ exp: n7 { $$ = $1; };
 
 
 // PRECEDENCE 7 (LOWEST) - Bitwise OR
-n7: n7 '|' n6 { $$ = asd_new("|"); asd_add_child($$, $1); asd_add_child($$, $3); }
+n7: n7 '|' n6 { $$ = asd_new("|", NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
   | n6 { $$ = $1; };
 
 
 // PRECEDENCE 6 - Bitwise AND
-n6: n6 '&' n5 { $$ = asd_new("&"); asd_add_child($$, $1); asd_add_child($$, $3); }
+n6: n6 '&' n5 { $$ = asd_new("&", NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
   | n5 { $$ = $1; };
 
 
@@ -259,7 +246,7 @@ n6: n6 '&' n5 { $$ = asd_new("&"); asd_add_child($$, $1); asd_add_child($$, $3);
 prec5_ops: TK_OC_EQ { $$ = "=="; } 
          | TK_OC_NE { $$ = "!="; };
 
-n5: n5 prec5_ops n4 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$, $3); }
+n5: n5 prec5_ops n4 { $$ = asd_new($2, NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
   | n4 { $$ = $1; };
 
 
@@ -269,7 +256,7 @@ prec4_ops: '<' { $$ = "<"; }
          | TK_OC_LE { $$ = "<="; } 
          | TK_OC_GE { $$ = ">="; };
 
-n4: n4 prec4_ops n3 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$, $3); }
+n4: n4 prec4_ops n3 { $$ = asd_new($2, NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
   | n3 { $$ = $1; };   
 
 
@@ -277,7 +264,7 @@ n4: n4 prec4_ops n3 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$,
 prec3_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; };
 
-n3: n3 prec3_ops n2 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$, $3); }
+n3: n3 prec3_ops n2 { $$ = asd_new($2, NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
   | n2 { $$ = $1; };
 
 
@@ -286,7 +273,7 @@ prec2_ops: '*' { $$ = "*"; }
          | '/' { $$ = "/"; } 
          | '%' { $$ = "%"; };
 
-n2: n2 prec2_ops n1 { $$ = asd_new($2); asd_add_child($$, $1); asd_add_child($$, $3); }
+n2: n2 prec2_ops n1 { $$ = asd_new($2, NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
   | n1 { $$ = $1; };
 
 
@@ -295,15 +282,15 @@ prec1_ops: '+' { $$ = "+"; }
          | '-' { $$ = "-"; } 
          | '!' { $$ = "!"; };
 
-n1: prec1_ops n1 { $$ = asd_new($1); asd_add_child($$, $2); }
+n1: prec1_ops n1 { $$ = asd_new($1, NULL); asd_add_child($$, $2); }
   | n0 { $$ = $1; };
 
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
 prec0_ops: func_call { $$ = $1; } 
-         | TK_ID { $$ = asd_new($1.value); free($1.value); } 
-         | TK_LI_INT { $$ = asd_new($1.value); free($1.value); }
-         | TK_LI_FLOAT { $$ = asd_new($1.value); free($1.value); }
+         | TK_ID { $$ = asd_new($1->value, $1); } 
+         | TK_LI_INT { $$ = asd_new($1->value, $1); }
+         | TK_LI_FLOAT { $$ = asd_new($1->value, $1); }
          | '(' exp ')'{ $$ = $2; };
 
 n0: prec0_ops { $$ = $1; };
