@@ -53,3 +53,5 @@ dkms.conf
 
 parser.tab*
 lex.yy*
+*.dot
+*.png

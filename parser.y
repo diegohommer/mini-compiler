@@ -43,7 +43,7 @@
 %token <lexical_value> TK_LI_FLOAT
 %token TK_ER
 
-%type <tree> def_func func_header func_params func_body  var_decl var_init
+%type <tree> def_func func_header func_params func_body param_def param_def_list var_decl var_init
 %type <tree> prog_list element cmd_block cmd_list call_args call_args_list
 %type <tree> simple_cmd atribution func_call return_cmd if_else_cmd else_cmd while_cmd
 %type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops
@@ -105,8 +105,8 @@ func_params: TK_PR_WITH param_def_list { $$ = NULL; }
            | %empty { $$ = NULL; };
 
 // PARAMETER LIST - A list of comma-separated parameter definitions
-param_def_list: param_def
-              | param_def ',' param_def_list;
+param_def_list: param_def { $$ = NULL; }
+              | param_def ',' param_def_list { $$ = NULL; };
 
 // PARAMETER - Defines a single parameter with its type
 param_def: TK_ID TK_PR_AS type { free($1->value); free($1); };
@@ -218,8 +218,10 @@ else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
 // REPETITION - Defines a while-loop structure
 while_cmd: TK_PR_WHILE '(' exp ')' cmd_block { 
   $$ = asd_new("while", NULL); 
-  asd_add_child($$, $3); 
-  asd_add_child($$, $5); 
+  asd_add_child($$, $3);
+  if($5 != NULL){
+    asd_add_child($$, $5);
+  }
 };
 
 
