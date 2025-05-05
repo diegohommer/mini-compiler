@@ -46,7 +46,7 @@
 %type <tree> def_func func_header func_params func_body param_def param_def_list var_decl var_init
 %type <tree> prog_list element cmd_block cmd_list call_args call_args_list
 %type <tree> simple_cmd atribution func_call return_cmd if_else_cmd else_cmd while_cmd
-%type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops
+%type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops literal
 %type <str> prec5_ops prec4_ops prec3_ops prec2_ops prec1_ops
 
 %define parse.error verbose
@@ -123,7 +123,8 @@ func_body: cmd_block { $$ = $1; };
 
 // SIMPLE COMMAND - Can be any of the following commands
 simple_cmd: cmd_block { $$ = $1; }
-          | var_decl { $$ = $1; } 
+          | var_decl { $$ = $1; }
+          | var_init { $$ = $1; }
           | atribution { $$ = $1; }
           | func_call { $$ = $1; }
           | return_cmd { $$ = $1; }
@@ -150,19 +151,16 @@ cmd_list: simple_cmd { $$ = $1; }
 
 // VARIABLE DECLARATION - Declares a variable with a specific type
 var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; free($2->value); free($2); };
-        | TK_PR_DECLARE TK_ID TK_PR_AS type var_init { 
-            $$ = asd_new("with", NULL);
-            asd_add_child($$, asd_new($2->value, $2));
-            asd_add_child($$, $5);
-          }
 
-// VARIABLE INITIALIZATION - Optionally initializes a variable with literal
-var_init: TK_PR_WITH TK_LI_INT { $$ = asd_new($2->value, $2); }
-        | TK_PR_WITH TK_LI_FLOAT { $$ = asd_new($2->value, $2); };
-
+// VARIABLE INITIALIZATION - Declares and initializes a variable with literal
+var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
+    $$ = asd_new("with", NULL);
+    asd_add_child($$, asd_new($2->value, $2));
+    asd_add_child($$, $6);
+}
 
 // ATRIBUTION - Defines an atribution
-atribution: TK_ID TK_PR_IS exp { 
+atribution: TK_ID TK_PR_IS exp {
   $$ = asd_new("is", NULL); 
   asd_add_child($$, asd_new($1->value, $1)); 
   asd_add_child($$, $3);
@@ -291,14 +289,15 @@ n1: prec1_ops n1 { $$ = asd_new($1, NULL); asd_add_child($$, $2); }
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
 prec0_ops: func_call { $$ = $1; } 
          | TK_ID { $$ = asd_new($1->value, $1); } 
-         | TK_LI_INT { $$ = asd_new($1->value, $1); }
-         | TK_LI_FLOAT { $$ = asd_new($1->value, $1); }
+         | literal { $$ = $1; }
          | '(' exp ')'{ $$ = $2; };
 
 n0: prec0_ops { $$ = $1; };
 
-// TYPE TOKENS
+// TYPE AND LITERAL TOKENS
 type: TK_PR_INT | TK_PR_FLOAT;
+literal: TK_LI_INT { $$ = asd_new($1->value, $1); }
+       | TK_LI_FLOAT { $$ = asd_new($1->value, $1); };
 
 %%
 
