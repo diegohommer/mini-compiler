@@ -3,11 +3,6 @@
     #include "asd.h"
     #include "parser.tab.h"
 
-    enum TokenType {
-        IDENTIFIER = 1,
-        LITERAL = 2
-    };
-
     int get_line_number();
     void assign_token_value(int type);
 %}
@@ -54,7 +49,8 @@ int get_line_number(){
 }
 
 void assign_token_value(int type){
-    yylval.lexical_value.line = get_line_number();
-    yylval.lexical_value.type = type;
-    yylval.lexical_value.value = strdup(yytext);
+    yylval.lexical_value = malloc(sizeof(lexical_value_t));
+    yylval.lexical_value->line = get_line_number();
+    yylval.lexical_value->type = type;
+    yylval.lexical_value->value = strdup(yytext);
 }

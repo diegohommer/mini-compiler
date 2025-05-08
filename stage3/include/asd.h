@@ -1,16 +1,26 @@
 #ifndef _ASD_H_
 #define _ASD_H_
 
+enum TokenType { IDENTIFIER = 1, LITERAL = 2 };
+
+typedef struct lexical_value {
+    int line;
+    int type;
+    char *value;
+} lexical_value_t;
+
 typedef struct asd_tree {
-  char *label;
-  int number_of_children;
-  struct asd_tree **children;
+    char *label;
+    int number_of_children;
+    struct asd_tree **children;
+    lexical_value_t *lexical_payload;
 } asd_tree_t;
 
 /*
- * Function asd_new, creates a node without children with the given label.
+ * Function asd_new, creates a node without children with the given label and
+ * payload.
  */
-asd_tree_t *asd_new(const char *label);
+asd_tree_t *asd_new(const char *label, lexical_value_t *payload);
 
 /*
  * Function asd_free, recursively frees the node and its children.
@@ -32,4 +42,10 @@ void asd_print(asd_tree_t *tree);
  */
 void asd_print_graphviz(asd_tree_t *tree);
 
-#endif //_ASD_H_
+/*
+ * Function asd_debug_graphviz, like asd_print_graphviz but includes line and
+ * type info.
+ */
+void asd_debug_graphviz(asd_tree_t *tree);
+
+#endif  //_ASD_H_

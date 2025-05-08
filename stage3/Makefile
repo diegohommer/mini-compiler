@@ -19,7 +19,7 @@ DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 _OBJ = main.o lex.yy.o parser.tab.o asd.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-EXEC = $(BDIR)/stage2.out
+EXEC = $(BDIR)/stage3.out
 
 # Default execution to all rules
 all: $(EXEC)
