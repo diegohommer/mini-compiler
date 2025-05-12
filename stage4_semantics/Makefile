@@ -13,13 +13,13 @@ CFLAGS = -I$(IDIR) -Wall -Werror -fsanitize=address
 
 
 # Files
-_DEPS = parser.tab.h asd.h
+_DEPS = parser.tab.h asd.h table.h errors.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o lex.yy.o parser.tab.o asd.o
+_OBJ = main.o lex.yy.o parser.tab.o asd.o table.o errors.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-EXEC = $(BDIR)/stage3.out
+EXEC = $(BDIR)/stage4.out
 
 # Default execution to all rules
 all: $(EXEC)
