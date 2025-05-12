@@ -1,4 +1,4 @@
-%{ 
+%{
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
@@ -6,6 +6,9 @@
 
   int yylex(void);
   void yyerror (char const *mensagem);
+  asd_tree_t* make_tree_1(const char* label, lexical_value_t* val, asd_tree_t* child);
+  asd_tree_t* make_tree_2(const char* label, lexical_value_t* val, asd_tree_t* child1, asd_tree_t* child2);
+  asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
   int get_line_number(void);
   extern asd_tree_t *tree;
 %}
@@ -52,28 +55,16 @@
 // =========================== 
 
 // PROGRAM - A optional list of elements followed by a semicolon
-program: prog_list ';' { tree = $1; };
+program: create_scope prog_list destroy_scope ';' { tree = $2; };
        | %empty { tree = NULL; };
-
 
 // PROGRAM LIST - A list of comma-separated elements
 prog_list: element { $$ = $1; }
-         | element ',' prog_list { 
-            if($1 == NULL){
-              $$ = $3;
-            }else {
-              if($3 != NULL){
-                asd_add_child($1, $3);
-              }
-              $$ = $1;
-            }
-         };
-
+         | element ',' prog_list { $$ = build_list($1, $3); };
 
 // ELEMENT - Either a function definition or variable declaration
 element: def_func { $$ = $1; }
        | var_decl { $$ = $1; };
-
 
 
 // ===========================
@@ -81,17 +72,15 @@ element: def_func { $$ = $1; }
 // =========================== 
 
 // FUNCTION DEFINITION - A header, optinal list of params and a body.
-def_func: func_header func_params TK_PR_IS func_body { 
+def_func: func_header create_scope func_params TK_PR_IS func_body destroy_scope {
   $$ = $1;
-  if($4 != NULL){ 
-    asd_add_child($$, $4);
+  if($5 != NULL){
+    asd_add_child($$, $5);
   }
 };
 
-
 // FUNCTION HEADER - Defines the function name and return type.
 func_header: TK_ID TK_PR_RETURNS type { $$ = asd_new($1->value, $1); };
-
 
 // FUNCTION PARAMETERS - Defines an optional parameter list
 func_params: TK_PR_WITH param_def_list { $$ = NULL; }
@@ -104,10 +93,8 @@ param_def_list: param_def { $$ = NULL; }
 // PARAMETER - Defines a single parameter with its type
 param_def: TK_ID TK_PR_AS type { free($1->value); free($1); };
 
-
 // FUNCTION BODY - A block of commands
 func_body: cmd_block { $$ = $1; };
-
 
 
 // ===========================
@@ -126,53 +113,36 @@ simple_cmd: cmd_block { $$ = $1; }
 
 
 // COMMAND BLOCK - A optional [] delimited sequence of simple commands
-cmd_block: '[' cmd_list ']' { $$ = $2; }
+cmd_block: '[' create_scope cmd_list destroy_scope ']' { $$ = $3; }
          | '[' ']' { $$ = NULL; };
 
 cmd_list: simple_cmd { $$ = $1; }
-        | simple_cmd cmd_list {
-            if($1 == NULL){
-              $$ = $2;
-            }else {
-              if($2 != NULL){
-                asd_add_child($1, $2);
-              }
-              $$ = $1;
-            }
-          };
+        | simple_cmd cmd_list { $$ = build_list($1, $2); };
 
 
 // VARIABLE DECLARATION - Declares a variable with a specific type
 var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; free($2->value); free($2); };
 
+
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
-    $$ = asd_new("with", NULL);
-    asd_add_child($$, asd_new($2->value, $2));
-    asd_add_child($$, $6);
+    $$ = make_tree_2("with", NULL, asd_new($2->value, $2), $6);
 }
+
 
 // ATRIBUTION - Defines an atribution
 atribution: TK_ID TK_PR_IS exp {
-  $$ = asd_new("is", NULL); 
-  asd_add_child($$, asd_new($1->value, $1)); 
-  asd_add_child($$, $3);
+  $$ = make_tree_2("is", NULL, asd_new($1->value, $1), $3);
 };
 
 
 // FUNCTION CALL - Calls the function with TK_ID name with call_args
 func_call: TK_ID call_args {
-  // Build "call <function_id>" string
   int len = strlen("call ") + strlen($1->value) + 1;
   char *buffer = malloc(len);
   snprintf(buffer, len, "call %s", $1->value);
-
-  $$ = asd_new(buffer, $1);
+  $$ = make_tree_1(buffer, $1, $2);
   free(buffer);
-
-  if($2 != NULL) {
-    asd_add_child($$, $2);
-  }
 };
 
 // CALL ARGUMENTS - A optional () delimited list of comma-separated arguments
@@ -180,26 +150,21 @@ call_args: '(' call_args_list ')' { $$ = $2; }
          | '(' ')' { $$ = NULL; };
 
 call_args_list: exp { $$ = $1; }
-              | exp ',' call_args_list { asd_add_child($$, $3); $$ = $1; };
+              | exp ',' call_args_list { $$ = build_list($1, $3); };
 
 
 // RETURN COMMAND - Defines return statement with an expression and its type.
-return_cmd: TK_PR_RETURN exp TK_PR_AS type { 
-  $$ = asd_new("return", NULL); 
-  asd_add_child($$, $2); 
+return_cmd: TK_PR_RETURN exp TK_PR_AS type {
+  $$ = make_tree_1("return", NULL, $2);
 };
 
 
 // CONDITIONAL - Defines an if-else structure (optional else)
 if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
-  $$ = asd_new("if", NULL); 
+  $$ = asd_new("if", NULL);
   asd_add_child($$, $3);
-  if($5 != NULL){
-    asd_add_child($$, $5);
-  }
-  if($6 != NULL){
-    asd_add_child($$, $6);
-  }
+  if($5 != NULL){ asd_add_child($$, $5); }
+  if($6 != NULL){ asd_add_child($$, $6); }
 };
 
 else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
@@ -207,13 +172,9 @@ else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
 
 
 // REPETITION - Defines a while-loop structure
-while_cmd: TK_PR_WHILE '(' exp ')' cmd_block { 
-  $$ = asd_new("while", NULL); 
-  asd_add_child($$, $3);
-  if($5 != NULL){
-    asd_add_child($$, $5);
-  }
-};
+while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
+  $$ = make_tree_2("while", NULL, $3, $5);
+}
 
 
 
@@ -224,67 +185,54 @@ while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
 // EXPRESSION START
 exp: n7 { $$ = $1; };
 
-
 // PRECEDENCE 7 (LOWEST) - Bitwise OR
-n7: n7 '|' n6 { $$ = asd_new("|", NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
+n7: n7 '|' n6 { $$ = make_tree_2("|", NULL, $1, $3); }
   | n6 { $$ = $1; };
 
-
 // PRECEDENCE 6 - Bitwise AND
-n6: n6 '&' n5 { $$ = asd_new("&", NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
+n6: n6 '&' n5 { $$ = make_tree_2("&", NULL, $1, $3); }
   | n5 { $$ = $1; };
-
 
 // PRECEDENCE 5 - Comparison (==, !=)
 prec5_ops: TK_OC_EQ { $$ = "=="; } 
          | TK_OC_NE { $$ = "!="; };
-
-n5: n5 prec5_ops n4 { $$ = asd_new($2, NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
+n5: n5 prec5_ops n4 { $$ = make_tree_2($2, NULL, $1, $3); }
   | n4 { $$ = $1; };
-
 
 // PRECEDENCE 4 - Comparison (<, >, <=, >=)
 prec4_ops: '<' { $$ = "<"; } 
          | '>' { $$ = ">"; } 
          | TK_OC_LE { $$ = "<="; } 
          | TK_OC_GE { $$ = ">="; };
-
-n4: n4 prec4_ops n3 { $$ = asd_new($2, NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
+n4: n4 prec4_ops n3 { $$ = make_tree_2($2, NULL, $1, $3); }
   | n3 { $$ = $1; };   
 
 
 // PRECEDENCE 3 - Addition & Subtraction (+, -)
 prec3_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; };
-
-n3: n3 prec3_ops n2 { $$ = asd_new($2, NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
+n3: n3 prec3_ops n2 { $$ = make_tree_2($2, NULL, $1, $3); }
   | n2 { $$ = $1; };
-
 
 // PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %)
 prec2_ops: '*' { $$ = "*"; } 
          | '/' { $$ = "/"; } 
          | '%' { $$ = "%"; };
-
-n2: n2 prec2_ops n1 { $$ = asd_new($2, NULL); asd_add_child($$, $1); asd_add_child($$, $3); }
+n2: n2 prec2_ops n1 { $$ = make_tree_2($2, NULL, $1, $3); }
   | n1 { $$ = $1; };
-
 
 // PRECEDENCE 1 - Unary Operators (+, -, !)
 prec1_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; } 
          | '!' { $$ = "!"; };
-
-n1: prec1_ops n1 { $$ = asd_new($1, NULL); asd_add_child($$, $2); }
+n1: prec1_ops n1 { $$ = make_tree_1($1, NULL, $2); }
   | n0 { $$ = $1; };
-
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
 prec0_ops: func_call { $$ = $1; } 
          | TK_ID { $$ = asd_new($1->value, $1); } 
          | literal { $$ = $1; }
          | '(' exp ')'{ $$ = $2; };
-
 n0: prec0_ops { $$ = $1; };
 
 // TYPE AND LITERAL TOKENS
@@ -292,8 +240,39 @@ type: TK_PR_INT | TK_PR_FLOAT;
 literal: TK_LI_INT { $$ = asd_new($1->value, $1); }
        | TK_LI_FLOAT { $$ = asd_new($1->value, $1); };
 
+
+
+// ===========================
+//       SYMBOL TABLES
+// ===========================
+
+// SCOPE NON-TERMINALS - For creating and destroying symbol tables on a given scope
+create_scope: %empty;
+destroy_scope: %empty;
 %%
 
 void yyerror(const char *message) {
     fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
+}
+
+asd_tree_t* make_tree_1(const char* label, lexical_value_t* val, asd_tree_t* child){
+  asd_tree_t* parent = asd_new(label, val);
+  if(child != NULL) asd_add_child(parent, child);
+  return parent;
+}
+
+asd_tree_t* make_tree_2(const char* label, lexical_value_t* val, asd_tree_t* child1, asd_tree_t* child2){
+  asd_tree_t* parent = asd_new(label, val);
+  if(child1 != NULL) asd_add_child(parent, child1);
+  if(child2 != NULL) asd_add_child(parent, child2);
+  return parent;
+}
+
+asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail){
+  if(head == NULL){
+    return tail;
+  }else {
+    if(tail != NULL) asd_add_child(head, tail);
+    return head;
+  }
 }
