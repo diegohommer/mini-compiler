@@ -32,7 +32,7 @@ void asd_free(asd_tree_t *tree)
         free(tree->lexical_payload);
         free(tree);
     } else {
-        printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+        printf("Error: %s received parameter tree = %p.\n", __FUNCTION__, tree);
     }
 }
 
@@ -44,21 +44,21 @@ void asd_add_child(asd_tree_t *tree, asd_tree_t *child)
 
         tree->children[tree->number_of_children - 1] = child;
     } else {
-        printf("Erro: %s recebeu parâmetro tree = %p / %p.\n", __FUNCTION__, tree, child);
+        printf("Error: %s received parameter tree = %p / %p.\n", __FUNCTION__, tree, child);
     }
 }
 
-static void _asd_print(FILE *foutput, asd_tree_t *tree, int profundidade)
+static void _asd_print(FILE *foutput, asd_tree_t *tree, int depth)
 {
     int i;
     if (tree != NULL) {
-        fprintf(foutput, "%d%*s: Nó '%s' tem %d filhos:\n", profundidade, profundidade * 2, "",
+        fprintf(foutput, "%d%*s: Node '%s' has %d children:\n", depth, depth * 2, "",
                 tree->label, tree->number_of_children);
         for (i = 0; i < tree->number_of_children; i++) {
-            _asd_print(foutput, tree->children[i], profundidade + 1);
+            _asd_print(foutput, tree->children[i], depth + 1);
         }
     } else {
-        printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+        printf("Error: %s received parameter tree = %p.\n", __FUNCTION__, tree);
     }
 }
 
@@ -68,7 +68,7 @@ void asd_print(asd_tree_t *tree)
     if (tree != NULL) {
         _asd_print(foutput, tree, 0);
     } else {
-        printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+        printf("Error: %s received parameter tree = %p.\n", __FUNCTION__, tree);
     }
 }
 
@@ -81,7 +81,7 @@ static void _asd_print_graphviz(FILE *foutput, asd_tree_t *tree)
             _asd_print_graphviz(foutput, tree->children[i]);
         }
     } else {
-        printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+        printf("Error: %s received parameter tree = %p.\n", __FUNCTION__, tree);
     }
 }
 
@@ -120,11 +120,11 @@ void asd_print_graphviz(asd_tree_t *tree)
 {
     FILE *foutput = stdout;
     if (tree != NULL) {
-        fprintf(foutput, "digraph grafo {\n");
+        fprintf(foutput, "digraph graph {\n");
         _asd_print_graphviz(foutput, tree);
         fprintf(foutput, "}\n");
     } else {
-        printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+        printf("Error: %s received parameter tree = %p.\n", __FUNCTION__, tree);
     }
 }
 
@@ -132,10 +132,10 @@ void asd_debug_graphviz(asd_tree_t *tree)
 {
     FILE *foutput = stdout;
     if (tree != NULL) {
-        fprintf(foutput, "digraph grafo {\n");
+        fprintf(foutput, "digraph graph {\n");
         _asd_debug_graphviz(foutput, tree);
         fprintf(foutput, "}\n");
     } else {
-        printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+        printf("Error: %s received parameter tree = %p.\n", __FUNCTION__, tree);
     }
 }

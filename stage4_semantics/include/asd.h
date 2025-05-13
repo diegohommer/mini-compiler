@@ -1,7 +1,7 @@
 #ifndef _ASD_H_
 #define _ASD_H_
 
-enum TokenType { IDENTIFIER = 1, LITERAL = 2 };
+typedef enum TokenType { IDENTIFIER = 1, LITERAL = 2 } type_t;
 
 typedef struct lexical_value {
     int line;
