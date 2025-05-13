@@ -1,12 +1,14 @@
 #include "table.h"
 
-#include <stdlib.h>
-
 symbol_table_t* table_new(void)
 {
-    symbol_table_t* table = NULL;
-    table = calloc(1, sizeof(symbol_table_t));
-    return table;
+    symbol_table_t* new_table = NULL;
+    new_table = calloc(1, sizeof(symbol_table_t));
+    if (new_table != NULL){
+        new_table->num_symbols = 0;
+        new_table->symbols = NULL;
+    }
+    return new_table;
 }
 
 void table_free(symbol_table_t* table)
@@ -14,12 +16,12 @@ void table_free(symbol_table_t* table)
     if (table != NULL) {
         int i;
         for (i = 0; i < table->num_symbols; i++) {
-            _symbol_free(table->symbols[i]);
+            symbol_free(table->symbols[i]);
         }
         free(table->symbols);
         free(table);
     } else {
-        printf("Error: %s rereived NULL symbol table = %p.\n", __FUNCTION__, table);
+        printf("Error: %s received NULL symbol table = %p.\n", __FUNCTION__, table);
     }
 }
 
@@ -28,7 +30,6 @@ void table_add_symbol(symbol_table_t* table, symbol_t* symbol)
     if (table != NULL && symbol != NULL) {
         table->num_symbols++;
         table->symbols = realloc(table->symbols, table->num_symbols * sizeof(symbol_t*));
-
         table->symbols[table->num_symbols - 1] = symbol;
     } else {
         printf("Error: %s received NULL symbol table = %p / %p.\n", __FUNCTION__, table, symbol);
