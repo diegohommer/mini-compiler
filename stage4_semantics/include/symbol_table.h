@@ -1,5 +1,5 @@
-#ifndef TABLE_H
-#define TABLE_H
+#ifndef SYMBOL_TABLE_H
+#define SYMBOL_TABLE_H
 
 #include "asd.h"
 
@@ -61,4 +61,4 @@ void symbol_free(symbol_t* symbol);
  */
 void symbol_add_parameter(symbol_t* symbol, parameter_t* param);
 
-#endif  // TABLE_H
+#endif  // SYMBOL_TABLE_H

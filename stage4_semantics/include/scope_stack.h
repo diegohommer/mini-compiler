@@ -1,7 +1,7 @@
-#ifndef SCOPE_SCOPE_H
-#define SCOPE_SCOPE_H
+#ifndef SCOPE_STACK_H
+#define SCOPE_STACK_H
 
-#include "table.h"
+#include "symbol_table.h"
 
 typedef struct {
     symbol_table_t** tables;
@@ -28,4 +28,4 @@ void scope_push(scope_stack_t* stack);
  */
 void scope_pop(scope_stack_t* stack);
 
-#endif  // SCOPE_SCOPE_H
+#endif  // SCOPE_STACK_H

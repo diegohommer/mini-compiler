@@ -1,4 +1,4 @@
-#include "table.h"
+#include "symbol_table.h"
 
 symbol_table_t* table_new(void)
 {

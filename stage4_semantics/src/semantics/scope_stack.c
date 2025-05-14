@@ -1,4 +1,4 @@
-#include "symbol_scope.h"
+#include "scope_stack.h"
 
 scope_stack_t* scope_stack_new(void)
 {

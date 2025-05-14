@@ -2,7 +2,8 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
-  #include <asd.h>
+
+  #include "scope_stack.h"
 
   int yylex(void);
   void yyerror (char const *mensagem);
@@ -11,6 +12,7 @@
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
   int get_line_number(void);
   extern asd_tree_t *tree;
+  extern scope_stack_t *scope_stack;
 %}
 
 %union {
