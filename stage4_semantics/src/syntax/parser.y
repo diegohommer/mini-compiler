@@ -2,13 +2,14 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
+  #include <stdarg.h>
+  #include <stddef.h>
 
   #include "scope_stack.h"
 
   int yylex(void);
   void yyerror (char const *mensagem);
-  asd_tree_t* make_tree_1(const char* label, lexical_value_t* val, asd_tree_t* child);
-  asd_tree_t* make_tree_2(const char* label, lexical_value_t* val, asd_tree_t* child1, asd_tree_t* child2);
+  asd_tree_t* make_tree(const char* label, lexical_value_t* val, int num_children, ...);
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
   int get_line_number(void);
   extern asd_tree_t *tree;
@@ -133,13 +134,13 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; free($2->value); free($
 
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
-    $$ = make_tree_2("with", NULL, asd_new($2->value, $2), $6);
+    $$ = make_tree("with", NULL, 2, asd_new($2->value, $2), $6);
 }
 
 
 // ATRIBUTION - Defines an atribution
 atribution: TK_ID TK_PR_IS exp {
-  $$ = make_tree_2("is", NULL, asd_new($1->value, $1), $3);
+  $$ = make_tree("is", NULL, 2, asd_new($1->value, $1), $3);
 };
 
 
@@ -148,7 +149,7 @@ func_call: TK_ID call_args {
   int len = strlen("call ") + strlen($1->value) + 1;
   char *buffer = malloc(len);
   snprintf(buffer, len, "call %s", $1->value);
-  $$ = make_tree_1(buffer, $1, $2);
+  $$ = make_tree(buffer, $1, 1, $2);
   free(buffer);
 };
 
@@ -162,16 +163,13 @@ call_args_list: exp { $$ = $1; }
 
 // RETURN COMMAND - Defines return statement with an expression and its type.
 return_cmd: TK_PR_RETURN exp TK_PR_AS type {
-  $$ = make_tree_1("return", NULL, $2);
+  $$ = make_tree("return", NULL, 1, $2);
 };
 
 
 // CONDITIONAL - Defines an if-else structure (optional else)
 if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
-  $$ = asd_new("if", NULL);
-  asd_add_child($$, $3);
-  if($5 != NULL){ asd_add_child($$, $5); }
-  if($6 != NULL){ asd_add_child($$, $6); }
+  $$ = make_tree("if", NULL, 3, $3, $5, $6);
 };
 
 else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
@@ -180,7 +178,7 @@ else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
 
 // REPETITION - Defines a while-loop structure
 while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
-  $$ = make_tree_2("while", NULL, $3, $5);
+  $$ = make_tree("while", NULL, 2, $3, $5);
 }
 
 
@@ -193,17 +191,17 @@ while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
 exp: n7 { $$ = $1; };
 
 // PRECEDENCE 7 (LOWEST) - Bitwise OR
-n7: n7 '|' n6 { $$ = make_tree_2("|", NULL, $1, $3); }
+n7: n7 '|' n6 { $$ = make_tree("|", NULL, 2, $1, $3); }
   | n6 { $$ = $1; };
 
 // PRECEDENCE 6 - Bitwise AND
-n6: n6 '&' n5 { $$ = make_tree_2("&", NULL, $1, $3); }
+n6: n6 '&' n5 { $$ = make_tree("&", NULL, 2, $1, $3); }
   | n5 { $$ = $1; };
 
 // PRECEDENCE 5 - Comparison (==, !=)
 prec5_ops: TK_OC_EQ { $$ = "=="; } 
          | TK_OC_NE { $$ = "!="; };
-n5: n5 prec5_ops n4 { $$ = make_tree_2($2, NULL, $1, $3); }
+n5: n5 prec5_ops n4 { $$ = make_tree($2, NULL, 2, $1, $3); }
   | n4 { $$ = $1; };
 
 // PRECEDENCE 4 - Comparison (<, >, <=, >=)
@@ -211,28 +209,28 @@ prec4_ops: '<' { $$ = "<"; }
          | '>' { $$ = ">"; } 
          | TK_OC_LE { $$ = "<="; } 
          | TK_OC_GE { $$ = ">="; };
-n4: n4 prec4_ops n3 { $$ = make_tree_2($2, NULL, $1, $3); }
+n4: n4 prec4_ops n3 { $$ = make_tree($2, NULL, 2, $1, $3); }
   | n3 { $$ = $1; };   
 
 
 // PRECEDENCE 3 - Addition & Subtraction (+, -)
 prec3_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; };
-n3: n3 prec3_ops n2 { $$ = make_tree_2($2, NULL, $1, $3); }
+n3: n3 prec3_ops n2 { $$ = make_tree($2, NULL, 2, $1, $3); }
   | n2 { $$ = $1; };
 
 // PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %)
 prec2_ops: '*' { $$ = "*"; } 
          | '/' { $$ = "/"; } 
          | '%' { $$ = "%"; };
-n2: n2 prec2_ops n1 { $$ = make_tree_2($2, NULL, $1, $3); }
+n2: n2 prec2_ops n1 { $$ = make_tree($2, NULL, 2, $1, $3); }
   | n1 { $$ = $1; };
 
 // PRECEDENCE 1 - Unary Operators (+, -, !)
 prec1_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; } 
          | '!' { $$ = "!"; };
-n1: prec1_ops n1 { $$ = make_tree_1($1, NULL, $2); }
+n1: prec1_ops n1 { $$ = make_tree($1, NULL, 1, $2); }
   | n0 { $$ = $1; };
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
@@ -260,20 +258,24 @@ destroy_scope: %empty { scope_pop(scope_stack); };
 %%
 
 void yyerror(const char *message) {
-    fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
+  fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
 }
 
-asd_tree_t* make_tree_1(const char* label, lexical_value_t* val, asd_tree_t* child){
+asd_tree_t* make_tree(const char* label, lexical_value_t* val, int num_children, ...){
   asd_tree_t* parent = asd_new(label, val);
-  if(child != NULL) asd_add_child(parent, child);
-  return parent;
-}
 
-asd_tree_t* make_tree_2(const char* label, lexical_value_t* val, asd_tree_t* child1, asd_tree_t* child2){
-  asd_tree_t* parent = asd_new(label, val);
-  if(child1 != NULL) asd_add_child(parent, child1);
-  if(child2 != NULL) asd_add_child(parent, child2);
-  return parent;
+	va_list args;
+	va_start(args, num_children);
+
+	for (int i = 0; i < num_children; ++i) {
+		asd_tree_t* child = va_arg(args, asd_tree_t*);
+		if (child != NULL) {
+			asd_add_child(parent, child);
+		}
+	}
+
+	va_end(args);
+	return parent;
 }
 
 asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail){
