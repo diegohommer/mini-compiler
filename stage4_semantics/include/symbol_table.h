@@ -3,7 +3,7 @@
 
 #include "asd.h"
 
-typedef enum { INT, FLOAT } type_t;
+typedef enum { INT = 0, FLOAT = 1 } type_t;
 
 /* Structure for storing function parameters */
 typedef struct {
@@ -49,7 +49,7 @@ void table_add_symbol(symbol_table_t* table, symbol_t* symbol);
 /*
  * Function symbol_new, creates a symbol with the given fields and an empty param list.
  */
-symbol_t* symbol_new(kind_t kind, int type, lexical_value_t* lex_value);
+symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value);
 
 /*
  * Function symbol_free, recursively frees the symbol and its parameters.

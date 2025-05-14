@@ -28,4 +28,9 @@ void scope_push(scope_stack_t* stack);
  */
 void scope_pop(scope_stack_t* stack);
 
+/*
+ * Function scope_add_symbol, adds the given symbol to the scope that's on top of the stack.
+ */
+void scope_add_symbol(symbol_t* symbol);
+
 #endif  // SCOPE_STACK_H

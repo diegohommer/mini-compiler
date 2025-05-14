@@ -17,6 +17,7 @@
 
 %union {
   char* str;
+  int type;
   asd_tree_t* tree;
   lexical_value_t* lexical_value;
 }
@@ -42,10 +43,11 @@
 %token TK_ER
 
 %type <tree> def_func func_header func_params func_body param_def param_def_list var_decl var_init
-%type <tree> prog_list element cmd_block cmd_list call_args call_args_list
+%type <tree> prog_list element cmd_block func_cmd_block cmd_list call_args call_args_list
 %type <tree> simple_cmd atribution func_call return_cmd if_else_cmd else_cmd while_cmd
 %type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops literal
 %type <str> prec5_ops prec4_ops prec3_ops prec2_ops prec1_ops
+%type <type> type
 
 %define parse.error verbose
 %start program
@@ -96,7 +98,7 @@ param_def_list: param_def { $$ = NULL; }
 param_def: TK_ID TK_PR_AS type { free($1->value); free($1); };
 
 // FUNCTION BODY - A block of commands
-func_body: cmd_block { $$ = $1; };
+func_body: func_cmd_block { $$ = $1; };
 
 
 // ===========================
@@ -116,6 +118,9 @@ simple_cmd: cmd_block { $$ = $1; }
 
 // COMMAND BLOCK - A optional [] delimited sequence of simple commands
 cmd_block: '[' create_scope cmd_list destroy_scope ']' { $$ = $3; }
+         | '[' ']' { $$ = NULL; };
+
+func_cmd_block: '[' cmd_list ']' { $$ = $2; }
          | '[' ']' { $$ = NULL; };
 
 cmd_list: simple_cmd { $$ = $1; }
@@ -238,7 +243,8 @@ prec0_ops: func_call { $$ = $1; }
 n0: prec0_ops { $$ = $1; };
 
 // TYPE AND LITERAL TOKENS
-type: TK_PR_INT | TK_PR_FLOAT;
+type: TK_PR_INT { $$ = INT; }
+    | TK_PR_FLOAT { $$ = FLOAT; };
 literal: TK_LI_INT { $$ = asd_new($1->value, $1); }
        | TK_LI_FLOAT { $$ = asd_new($1->value, $1); };
 
@@ -249,8 +255,8 @@ literal: TK_LI_INT { $$ = asd_new($1->value, $1); }
 // ===========================
 
 // SCOPE NON-TERMINALS - For creating and destroying symbol tables on a given scope
-create_scope: %empty;
-destroy_scope: %empty;
+create_scope: %empty { scope_push(scope_stack); };
+destroy_scope: %empty { scope_pop(scope_stack); };
 %%
 
 void yyerror(const char *message) {

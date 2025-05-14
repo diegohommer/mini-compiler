@@ -36,7 +36,7 @@ void table_add_symbol(symbol_table_t* table, symbol_t* symbol)
     }
 }
 
-symbol_t* symbol_new(kind_t kind, int type, lexical_value_t* lex_value)
+symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value)
 {
     symbol_t* symbol = NULL;
     symbol = calloc(1, sizeof(symbol_t));

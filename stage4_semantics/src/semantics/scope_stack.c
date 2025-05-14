@@ -43,3 +43,12 @@ void scope_pop(scope_stack_t* stack)
         printf("Error: %s received NULL scope stack = %p.\n", __FUNCTION__, stack);
     }
 }
+
+void scope_add_symbol(scope_stack_t* stack, symbol_t* symbol)
+{
+    if (stack != NULL && stack->num_tables > 0) {
+        table_add_symbol(stack->tables[stack->num_tables - 1], symbol);
+    } else {
+        printf("Error: %s called with invalid stack or empty scope stack.\n", __FUNCTION__);
+    }
+}
