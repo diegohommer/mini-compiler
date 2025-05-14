@@ -3,7 +3,7 @@
 
 #include "asd.h"
 
-typedef enum { LITERAL, IDENTIFIER, FUNCTION } kind_t;
+typedef enum { INT, FLOAT } type_t;
 
 /* Structure for storing function parameters */
 typedef struct {

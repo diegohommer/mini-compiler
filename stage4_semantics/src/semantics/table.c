@@ -80,7 +80,7 @@ void symbol_add_parameter(symbol_t* symbol, parameter_t* param)
     }
 
     if (symbol->kind != FUNCTION) {
-        printf("Error: %s called on non-function (%s) symbol\n", __FUNCTION__, symbol->kind);
+        printf("Error: %s called on non-function (%d) symbol\n", __FUNCTION__, symbol->kind);
         return;
     }
 

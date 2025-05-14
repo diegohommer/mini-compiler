@@ -13,11 +13,15 @@ CFLAGS = -I$(IDIR) -Wall -Werror -fsanitize=address
 
 
 # Files
-_DEPS = parser.tab.h asd.h table.h errors.h
+_DEPS = parser.tab.h asd.h table.h symbol_scope.h errors.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o lex.yy.o parser.tab.o asd.o table.o errors.o
-OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+# Source files (including generated ones)
+SRC := $(shell find $(SDIR) -name '*.c') \
+       $(SDIR)/syntax/parser.tab.c \
+       $(SDIR)/lexical/lex.yy.c
+ 
+OBJ := $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(SRC))
 
 EXEC = $(BDIR)/stage4.out
 
@@ -37,15 +41,16 @@ $(ODIR):
 	mkdir -p $(ODIR)
 
 # Rule to compile the .y bison file
-$(IDIR)/parser.tab.h $(SDIR)/parser.tab.c: $(SDIR)/parser.y | $(IDIR) $(ODIR)
-	$(BISON) -d -W --header=$(IDIR)/parser.tab.h -o $(SDIR)/parser.tab.c $<
+$(IDIR)/parser.tab.h $(SDIR)/syntax/parser.tab.c: $(SDIR)/syntax/parser.y | $(IDIR) $(ODIR)
+	$(BISON) -d -W --header=$(IDIR)/parser.tab.h -o $(SDIR)/syntax/parser.tab.c $<
 
 # Rule to compile the .l flex file
-$(SDIR)/lex.yy.c: $(SDIR)/scanner.l
+$(SDIR)/lexical/lex.yy.c: $(SDIR)/lexical/scanner.l
 	$(FLEX) -o $@ $<
 
 # Rule to compile .c files into .o files
-$(ODIR)/%.o: $(SDIR)/%.c $(DEPS) | $(ODIR)
+$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
+	@mkdir -p $(dir $@)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 # Rule to link object files into the final executable
@@ -53,4 +58,5 @@ $(EXEC): $(OBJ) | $(BDIR)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm -f $(ODIR)/*.o $(EXEC) $(IDIR)/parser.tab.h $(SDIR)/lex.yy.c $(SDIR)/parser.tab.c
+	rm -rf $(ODIR) $(BDIR)
+	rm -f $(IDIR)/parser.tab.h $(SDIR)/lexical/lex.yy.c $(SDIR)/syntax/parser.tab.c

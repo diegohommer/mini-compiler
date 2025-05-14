@@ -1,9 +1,10 @@
 #ifndef _ASD_H_
 #define _ASD_H_
 
+#include <stdio.h>
 #include <stdlib.h>
 
-typedef enum TokenType { IDENTIFIER = 1, LITERAL = 2 } type_t;
+typedef enum { IDENTIFIER = 1, LITERAL = 2, FUNCTION = 3 } kind_t;
 
 typedef struct lexical_value {
     int line;
