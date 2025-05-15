@@ -74,8 +74,7 @@ void symbol_free(symbol_t* symbol)
 
             int i;
             for (i = 0; i < symbol->params->num_parameters; i++) {
-                free(symbol->params->parameters[i]->label);
-                free(symbol->params->parameters[i]);
+                parameter_free(symbol->params->parameters[i]);
             }
             free(symbol->params->parameters);
             free(symbol->params);
@@ -136,4 +135,21 @@ void symbol_table_debug_print(symbol_table_t* table)
             }
         }
     }
+}
+
+parameter_t* parameter_new(const char* label, type_t type)
+{
+    parameter_t* param = NULL;
+    param = calloc(1, sizeof(parameter_t));
+    param->label = strdup(label);
+    param->type = type;
+    return param;
+}
+
+void parameter_free(parameter_t* param)
+{
+    if (param != NULL){
+        free(param->label);
+    }
+    free(param);
 }

@@ -44,7 +44,7 @@
 %token <lexical_value> TK_LI_FLOAT
 %token TK_ER
 
-%type <tree> def_func func_header func_params func_body param_def param_def_list var_decl var_init
+%type <tree> def_func func_header func_body var_decl var_init
 %type <tree> prog_list element cmd_block func_cmd_block cmd_list call_args call_args_list
 %type <tree> simple_cmd atribution func_call return_cmd if_else_cmd else_cmd while_cmd
 %type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops literal
@@ -86,20 +86,23 @@ def_func: func_header create_scope func_params TK_PR_IS func_body destroy_scope 
 // FUNCTION HEADER - Defines the function name and return type.
 func_header: TK_ID TK_PR_RETURNS type { 
   $$ = asd_new($1->value, $1);
-  scope_add_symbol(scope_stack, symbol_new(FUNCTION, $3, $1));
+  scope_declare_symbol(scope_stack, symbol_new(FUNCTION, $3, $1));
   free_lex_value($1);
 };
 
 // FUNCTION PARAMETERS - Defines an optional parameter list
-func_params: TK_PR_WITH param_def_list { $$ = NULL; }
-           | %empty { $$ = NULL; };
+func_params: TK_PR_WITH param_def_list
+           | %empty;
 
 // PARAMETER LIST - A list of comma-separated parameter definitions
-param_def_list: param_def { $$ = NULL; }
-              | param_def ',' param_def_list { $$ = NULL; };
+param_def_list: param_def
+              | param_def ',' param_def_list;
 
 // PARAMETER - Defines a single parameter with its type
-param_def: TK_ID TK_PR_AS type { free_lex_value($1); };
+param_def: TK_ID TK_PR_AS type {
+  scope_declare_function_parameter(scope_stack, symbol_new(IDENTIFIER, $3, $1));
+  free_lex_value($1); 
+};
 
 // FUNCTION BODY - A block of commands
 func_body: func_cmd_block { $$ = $1; };
@@ -134,7 +137,7 @@ cmd_list: simple_cmd { $$ = $1; }
 // VARIABLE DECLARATION - Declares a variable with a specific type
 var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { 
   $$ = NULL;  
-  scope_add_symbol(scope_stack, symbol_new(IDENTIFIER, $4, $2));
+  scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, $4, $2));
   free_lex_value($2);
 };
 
@@ -142,7 +145,7 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type {
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
   $$ = make_tree("with", NULL, 2, asd_new($2->value, $2), $6);
-  scope_add_symbol(scope_stack, symbol_new(IDENTIFIER, $4, $2));
+  scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, $4, $2));
   free_lex_value($2);
 }
 

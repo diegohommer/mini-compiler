@@ -43,14 +43,32 @@ void scope_push(scope_stack_t* stack);
 void scope_pop(scope_stack_t* stack);
 
 /**
- * @brief Adds a symbol to the current (top) scope on the stack.
- *
- * Raises ERR_DECLARED if a symbol with the same label already exists in the current scope.
- *
+ * @brief Declares a new symbol in the current scope.
+ * 
+ * Raises ERR_DECLARED if already declared in this scope.
+ * 
  * @param stack Pointer to the scope stack.
- * @param symbol Pointer to the symbol to be added.
+ * @param symbol Symbol to declare.
  */
-void scope_add_symbol(scope_stack_t* stack, symbol_t* symbol);
+void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol);
+
+/**
+ * @brief Declares a function parameter to the function currently being defined.
+ *
+ * This function assumes that:
+ * - The function symbol was added to the scope *below* the current one.
+ * - The parameter symbol is already created but not yet added to any scope.
+ *
+ * It adds the parameter symbol both to the current scope (as a local variable)
+ * and to the parameter list of the function symbol (in the parent scope).
+ *
+ * If the parent scope is empty or does not contain a function symbol as the last entry,
+ * this function will raise an internal error.
+ *
+ * @param stack Pointer to the current scope stack.
+ * @param param_symbol Pointer to the parameter symbol to be added.
+ */
+void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol);
 
 /**
  * @brief Prints the contents of the scope stack for debugging purposes.

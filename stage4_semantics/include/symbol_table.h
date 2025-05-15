@@ -129,4 +129,22 @@ void symbol_add_parameter(symbol_t* symbol, parameter_t* param);
  */
 void symbol_table_debug_print(symbol_table_t* table);
 
+/**
+ * @brief Creates a new function parameter.
+ *
+ * Allocates and initializes a parameter structure.
+ *
+ * @return Pointer to the new parameter.
+ */
+parameter_t* parameter_new(const char* label, type_t type);
+
+/**
+ * @brief Frees a parameter.
+ *
+ * Releases memory used by the parameter.
+ *
+ * @param param Pointer to the parameter to free.
+ */
+void parameter_free(parameter_t* param);
+
 #endif  // SYMBOL_TABLE_H
