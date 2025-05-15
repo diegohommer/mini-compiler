@@ -11,6 +11,7 @@
   void yyerror (char const *mensagem);
   asd_tree_t* make_tree(const char* label, lexical_value_t* val, int num_children, ...);
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
+  void free_lex_value(lexical_value_t* lexical_value);
   int get_line_number(void);
   extern asd_tree_t *tree;
   extern scope_stack_t *scope_stack;
@@ -79,13 +80,15 @@ element: def_func { $$ = $1; }
 // FUNCTION DEFINITION - A header, optinal list of params and a body.
 def_func: func_header create_scope func_params TK_PR_IS func_body destroy_scope {
   $$ = $1;
-  if($5 != NULL){
-    asd_add_child($$, $5);
-  }
+  if($5 != NULL) asd_add_child($$, $5);
 };
 
 // FUNCTION HEADER - Defines the function name and return type.
-func_header: TK_ID TK_PR_RETURNS type { $$ = asd_new($1->value, $1); };
+func_header: TK_ID TK_PR_RETURNS type { 
+  $$ = asd_new($1->value, $1);
+  scope_add_symbol(scope_stack, symbol_new(FUNCTION, $3, $1));
+  free_lex_value($1);
+};
 
 // FUNCTION PARAMETERS - Defines an optional parameter list
 func_params: TK_PR_WITH param_def_list { $$ = NULL; }
@@ -96,7 +99,7 @@ param_def_list: param_def { $$ = NULL; }
               | param_def ',' param_def_list { $$ = NULL; };
 
 // PARAMETER - Defines a single parameter with its type
-param_def: TK_ID TK_PR_AS type { free($1->value); free($1); };
+param_def: TK_ID TK_PR_AS type { free_lex_value($1); };
 
 // FUNCTION BODY - A block of commands
 func_body: func_cmd_block { $$ = $1; };
@@ -129,18 +132,25 @@ cmd_list: simple_cmd { $$ = $1; }
 
 
 // VARIABLE DECLARATION - Declares a variable with a specific type
-var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { $$ = NULL; free($2->value); free($2); };
+var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type { 
+  $$ = NULL;  
+  scope_add_symbol(scope_stack, symbol_new(IDENTIFIER, $4, $2));
+  free_lex_value($2);
+};
 
 
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
-    $$ = make_tree("with", NULL, 2, asd_new($2->value, $2), $6);
+  $$ = make_tree("with", NULL, 2, asd_new($2->value, $2), $6);
+  scope_add_symbol(scope_stack, symbol_new(IDENTIFIER, $4, $2));
+  free_lex_value($2);
 }
 
 
 // ATRIBUTION - Defines an atribution
 atribution: TK_ID TK_PR_IS exp {
   $$ = make_tree("is", NULL, 2, asd_new($1->value, $1), $3);
+  free_lex_value($1);
 };
 
 
@@ -150,6 +160,7 @@ func_call: TK_ID call_args {
   char *buffer = malloc(len);
   snprintf(buffer, len, "call %s", $1->value);
   $$ = make_tree(buffer, $1, 1, $2);
+  free_lex_value($1);
   free(buffer);
 };
 
@@ -235,7 +246,7 @@ n1: prec1_ops n1 { $$ = make_tree($1, NULL, 1, $2); }
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
 prec0_ops: func_call { $$ = $1; } 
-         | TK_ID { $$ = asd_new($1->value, $1); } 
+         | TK_ID { $$ = asd_new($1->value, $1); free_lex_value($1); } 
          | literal { $$ = $1; }
          | '(' exp ')'{ $$ = $2; };
 n0: prec0_ops { $$ = $1; };
@@ -243,8 +254,8 @@ n0: prec0_ops { $$ = $1; };
 // TYPE AND LITERAL TOKENS
 type: TK_PR_INT { $$ = INT; }
     | TK_PR_FLOAT { $$ = FLOAT; };
-literal: TK_LI_INT { $$ = asd_new($1->value, $1); }
-       | TK_LI_FLOAT { $$ = asd_new($1->value, $1); };
+literal: TK_LI_INT { $$ = asd_new($1->value, $1); free_lex_value($1); }
+       | TK_LI_FLOAT { $$ = asd_new($1->value, $1); free_lex_value($1); };
 
 
 
@@ -254,7 +265,7 @@ literal: TK_LI_INT { $$ = asd_new($1->value, $1); }
 
 // SCOPE NON-TERMINALS - For creating and destroying symbol tables on a given scope
 create_scope: %empty { scope_push(scope_stack); };
-destroy_scope: %empty { scope_pop(scope_stack); };
+destroy_scope: %empty { scope_stack_debug_print(scope_stack); scope_pop(scope_stack); };
 %%
 
 void yyerror(const char *message) {
@@ -285,4 +296,9 @@ asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail){
     if(tail != NULL) asd_add_child(head, tail);
     return head;
   }
+}
+
+void free_lex_value(lexical_value_t* lexical_value){
+  free(lexical_value->value);
+  free(lexical_value);
 }
