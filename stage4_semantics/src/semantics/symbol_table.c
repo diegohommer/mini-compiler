@@ -4,7 +4,7 @@ symbol_table_t* table_new(void)
 {
     symbol_table_t* new_table = NULL;
     new_table = calloc(1, sizeof(symbol_table_t));
-    if (new_table != NULL){
+    if (new_table != NULL) {
         new_table->num_symbols = 0;
         new_table->symbols = NULL;
     }
@@ -28,6 +28,17 @@ void table_free(symbol_table_t* table)
 void table_add_symbol(symbol_table_t* table, symbol_t* symbol)
 {
     if (table != NULL && symbol != NULL) {
+        int is_already_declared = 0;
+        int i;
+
+        // Check if a symbol with the same name has already been delcared in the current scope
+        for (i = 0; i < table->num_symbols; i++) {
+            if (strcmp(table->symbols[i]->lex_value->value, symbol->lex_value->value) == 0) {
+                display_declared_error(symbol->lex_value->value, symbol->lex_value->line);
+                exit(ERR_DECLARED);
+            }
+        }
+
         table->num_symbols++;
         table->symbols = realloc(table->symbols, table->num_symbols * sizeof(symbol_t*));
         table->symbols[table->num_symbols - 1] = symbol;
