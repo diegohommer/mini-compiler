@@ -12,7 +12,14 @@ asd_tree_t *asd_new(const char *label, lexical_value_t *payload)
         ret->label = strdup(label);
         ret->number_of_children = 0;
         ret->children = NULL;
-        ret->lexical_payload = payload;
+        if (payload != NULL) {
+            lexical_value_t *local_copy = malloc(sizeof(lexical_value_t));
+            local_copy->value = strdup(payload->value);
+            local_copy->line = payload->line;
+            ret->lexical_payload = local_copy;
+        } else {
+            ret->lexical_payload = NULL;
+        }
     }
     return ret;
 }

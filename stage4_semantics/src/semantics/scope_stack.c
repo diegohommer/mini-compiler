@@ -52,3 +52,26 @@ void scope_add_symbol(scope_stack_t* stack, symbol_t* symbol)
         printf("Error: %s called with invalid stack or empty scope stack.\n", __FUNCTION__);
     }
 }
+
+void scope_stack_debug_print(scope_stack_t* stack)
+{
+    if (!stack) {
+        printf("[Debug] Scope stack is NULL.\n");
+        return;
+    }
+
+    printf("========== Scope Stack (Top to Bottom) ==========\n");
+
+    for (int i = stack->num_tables - 1; i >= 0; i--) {
+        printf("┌── Scope Level %d ───────────────────────────────\n", i);
+        symbol_table_debug_print(stack->tables[i]);
+        if (i > 0)
+            printf(
+                "└───────────────────────────────────────────────┐\n"
+                "                 ↓\n");
+        else
+            printf("└───────────────────────────────────────────────┘\n");
+    }
+
+    printf("=================================================\n");
+}

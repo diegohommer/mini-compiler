@@ -8,8 +8,8 @@
  * @brief Represents a stack of symbol tables used for managing nested scopes.
  */
 typedef struct {
-	symbol_table_t** tables; /**< Array of pointers to symbol tables (one per scope). */
-	int num_tables;          /**< Current number of tables (scopes) in the stack. */
+    symbol_table_t** tables; /**< Array of pointers to symbol tables (one per scope). */
+    int num_tables;          /**< Current number of tables (scopes) in the stack. */
 } scope_stack_t;
 
 /**
@@ -52,5 +52,13 @@ void scope_pop(scope_stack_t* stack);
  */
 void scope_add_symbol(scope_stack_t* stack, symbol_t* symbol);
 
-#endif  // SCOPE_STACK_H
+/**
+ * @brief Prints the contents of the scope stack for debugging purposes.
+ *
+ * Each scope is printed with its level and the symbols it contains.
+ *
+ * @param stack Pointer to the scope stack.
+ */
+void scope_stack_debug_print(scope_stack_t* stack);
 
+#endif  // SCOPE_STACK_H

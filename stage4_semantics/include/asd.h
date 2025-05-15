@@ -34,16 +34,21 @@ typedef struct asd_tree {
 /**
  * @brief Creates a new AST node with no children.
  *
- * @param label Label for the node (copied internally).
- * @param payload Lexical payload (may be NULL).
- * @return Pointer to a newly allocated AST node.
+ * Copies the label and the payload (if not NULL). The caller may free the original payload after
+ * this call.
+ *
+ * @param label Label for the node.
+ * @param payload Lexical payload (optional).
+ * @return Pointer to a new AST node.
  */
 asd_tree_t *asd_new(const char *label, lexical_value_t *payload);
 
 /**
- * @brief Recursively frees the AST node and all its children.
+ * @brief Frees the AST node and its children.
  *
- * @param tree Pointer to the AST root node to free.
+ * Also frees the copied label and payload.
+ *
+ * @param tree AST root node to free.
  */
 void asd_free(asd_tree_t *tree);
 

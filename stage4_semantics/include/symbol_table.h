@@ -89,20 +89,22 @@ symbol_t* table_lookup_symbol(symbol_table_t* table, symbol_t* symbol);
 /**
  * @brief Creates a new symbol with the given kind, type, and lexical value.
  *
+ * A deep copy of the given lexical value is created and stored within the symbol.
  * The parameter list is initialized to empty (NULL).
  *
- * @param kind The kind of the symbol (IDENTIFIER, LITERAL or FUNCTION).
- * @param type The type of the symbol (INT or FLOAT).
- * @param lex_value Pointer to the lexical value.
- * @return Pointer to a newly allocated symbol.
+ * @param kind The kind of the symbol (IDENTIFIER, LITERAL, or FUNCTION).
+ * @param type The type of the symbol (INT, FLOAT, etc.).
+ * @param lex_value Pointer to the lexical value to be copied.
+ * @return Pointer to a newly allocated symbol containing its own internal copy of the lexical value.
  */
 symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value);
 
 /**
  * @brief Frees memory associated with the given symbol.
  *
- * Recursively frees parameters except for the lexical value which is freed
- * when the AST is freed.
+ * Recursively frees parameter list (if any) and the internal copy of the lexical value.
+ * Does not affect the original lexical value passed to `symbol_new`, as a deep copy
+ * was made during construction.
  *
  * @param symbol Pointer to the symbol to be freed.
  */
@@ -117,5 +119,14 @@ void symbol_free(symbol_t* symbol);
  * @param param Pointer to the parameter to be added.
  */
 void symbol_add_parameter(symbol_t* symbol, parameter_t* param);
+
+/**
+ * @brief Prints the contents of the symbol table for debugging purposes.
+ *
+ * Each symbol is displayed with relevant metadata such as label, type, and declaration line.
+ *
+ * @param table Pointer to the symbol table to print.
+ */
+void symbol_table_debug_print(symbol_table_t* table);
 
 #endif  // SYMBOL_TABLE_H

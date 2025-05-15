@@ -28,7 +28,6 @@ void table_free(symbol_table_t* table)
 void table_add_symbol(symbol_table_t* table, symbol_t* symbol)
 {
     if (table != NULL && symbol != NULL) {
-        int is_already_declared = 0;
         int i;
 
         // Check if a symbol with the same name has already been delcared in the current scope
@@ -55,7 +54,11 @@ symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value)
         symbol->kind = kind;
         symbol->type = type;
         symbol->params = NULL;
-        symbol->lex_value = lex_value;
+
+        lexical_value_t* local_copy = malloc(sizeof(lexical_value_t));
+        local_copy->value = strdup(lex_value->value);
+        local_copy->line = lex_value->line;
+        symbol->lex_value = local_copy;
     }
     return symbol;
 }
@@ -78,7 +81,8 @@ void symbol_free(symbol_t* symbol)
             free(symbol->params);
         }
 
-        // Don't free lexical value since asd_free() already does that for us.
+        free(symbol->lex_value->value);
+        free(symbol->lex_value);
         free(symbol);
     }
 }
@@ -109,4 +113,27 @@ void symbol_add_parameter(symbol_t* symbol, parameter_t* param)
     symbol->params->parameters =
         realloc(symbol->params->parameters, num_params * sizeof(parameter_t*));
     symbol->params->parameters[num_params - 1] = param;
+}
+
+void symbol_table_debug_print(symbol_table_t* table)
+{
+    if (!table) {
+        printf("  [empty symbol table]\n");
+        return;
+    }
+
+    for (int i = 0; i < table->num_symbols; i++) {
+        symbol_t* sym = table->symbols[i];
+        printf("  - %s (kind: %d, type: %d, line: %d)\n", sym->lex_value->value, (int)sym->kind,
+               (int)sym->type, sym->lex_value->line);
+
+        // If the symbol has parameters, display them
+        if (sym->params != NULL) {
+            printf("    Parameters:\n");
+            for (int j = 0; j < sym->params->num_parameters; j++) {
+                parameter_t* param = sym->params->parameters[j];
+                printf("      • %s (type: %d)\n", param->label, (int)param->type);
+            }
+        }
+    }
 }
