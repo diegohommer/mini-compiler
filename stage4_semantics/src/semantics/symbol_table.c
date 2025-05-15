@@ -13,37 +13,54 @@ symbol_table_t* table_new(void)
 
 void table_free(symbol_table_t* table)
 {
-    if (table != NULL) {
-        int i;
-        for (i = 0; i < table->num_symbols; i++) {
-            symbol_free(table->symbols[i]);
-        }
-        free(table->symbols);
-        free(table);
-    } else {
+    if (table == NULL) {
         printf("Error: %s received NULL symbol table = %p.\n", __FUNCTION__, table);
+        return;
     }
+ 
+    int i;
+    for (i = 0; i < table->num_symbols; i++) {
+        symbol_free(table->symbols[i]);
+    }
+    free(table->symbols);
+    free(table);
 }
 
 void table_add_symbol(symbol_table_t* table, symbol_t* symbol)
 {
-    if (table != NULL && symbol != NULL) {
-        int i;
-
-        // Check if a symbol with the same name has already been delcared in the current scope
-        for (i = 0; i < table->num_symbols; i++) {
-            if (strcmp(table->symbols[i]->lex_value->value, symbol->lex_value->value) == 0) {
-                display_declared_error(symbol->lex_value->value, symbol->lex_value->line);
-                exit(ERR_DECLARED);
-            }
-        }
-
-        table->num_symbols++;
-        table->symbols = realloc(table->symbols, table->num_symbols * sizeof(symbol_t*));
-        table->symbols[table->num_symbols - 1] = symbol;
-    } else {
+    if (table == NULL || symbol == NULL) {
         printf("Error: %s received NULL symbol table = %p / %p.\n", __FUNCTION__, table, symbol);
+        return;
     }
+
+    int i;
+    // Check if a symbol with the same name has already been delcared in the current scope
+    for (i = 0; i < table->num_symbols; i++) {
+        if (strcmp(table->symbols[i]->lex_value->value, symbol->lex_value->value) == 0) {
+            display_declared_error(symbol->lex_value->value, symbol->lex_value->line);
+            exit(ERR_DECLARED);
+        }
+    }
+    table->num_symbols++;
+    table->symbols = realloc(table->symbols, table->num_symbols * sizeof(symbol_t*));
+    table->symbols[table->num_symbols - 1] = symbol;
+}
+
+symbol_t* table_get_symbol(symbol_table_t* table, const char* label)
+{
+    if (table == NULL) {
+        printf("Error: %s received NULL symbol table = %p.\n", __FUNCTION__, table);
+        return NULL;
+    }
+
+    int i;
+    // Look for a symbol declared in the table that has the given label/name
+    for (i = 0; i < table->num_symbols; i++) {
+        if (strcmp(table->symbols[i]->lex_value->value, label) == 0) {
+            return table->symbols[i];
+        }
+    }
+    return NULL;
 }
 
 symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value)
@@ -65,25 +82,27 @@ symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value)
 
 void symbol_free(symbol_t* symbol)
 {
-    if (symbol != NULL) {
-        if (symbol->params != NULL) {
-            if (symbol->kind != FUNCTION) {
-                printf("Error: symbol of kind %d has parameters, but is not a FUNCTION\n",
-                       symbol->kind);
-            }
+    if (symbol == NULL) {
+        return;
+    }
 
-            int i;
-            for (i = 0; i < symbol->params->num_parameters; i++) {
-                parameter_free(symbol->params->parameters[i]);
-            }
-            free(symbol->params->parameters);
-            free(symbol->params);
+    if (symbol->params != NULL) {
+        if (symbol->kind != FUNCTION) {
+            printf("Error: symbol of kind %d has parameters, but is not a FUNCTION\n",
+                    symbol->kind);
         }
 
-        free(symbol->lex_value->value);
-        free(symbol->lex_value);
-        free(symbol);
+        int i;
+        for (i = 0; i < symbol->params->num_parameters; i++) {
+            parameter_free(symbol->params->parameters[i]);
+        }
+        free(symbol->params->parameters);
+        free(symbol->params);
     }
+
+    free(symbol->lex_value->value);
+    free(symbol->lex_value);
+    free(symbol);
 }
 
 void symbol_add_parameter(symbol_t* symbol, parameter_t* param)

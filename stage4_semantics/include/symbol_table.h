@@ -78,13 +78,13 @@ void table_add_symbol(symbol_table_t* table, symbol_t* symbol);
 /**
  * @brief Searches for a symbol in the symbol table.
  *
- * Compares the label of the given symbol against all entries in the table.
+ * Compares the given label against all entries in the table.
  *
  * @param table Pointer to the symbol table.
- * @param symbol Pointer to the symbol to search for.
+ * @param label Label/name of the identifier to look for.
  * @return Pointer to the matching symbol if found, NULL otherwise.
  */
-symbol_t* table_lookup_symbol(symbol_table_t* table, symbol_t* symbol);
+symbol_t* table_get_symbol(symbol_table_t* table, const char* label);
 
 /**
  * @brief Creates a new symbol with the given kind, type, and lexical value.
