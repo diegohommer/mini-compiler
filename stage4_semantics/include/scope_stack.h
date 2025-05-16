@@ -1,6 +1,12 @@
 #ifndef SCOPE_STACK_H
 #define SCOPE_STACK_H
 
+#define CLEAN_EXIT(stack, code)  \
+    do {                         \
+        scope_stack_free(stack); \
+        exit(code);              \
+    } while (0)
+
 #include "symbol_table.h"
 
 /**

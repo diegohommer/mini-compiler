@@ -53,7 +53,14 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
         return;
     }
 
-    table_add_symbol(stack->tables[stack->num_tables - 1], symbol);
+    symbol_table_t* current_scope = stack->tables[stack->num_tables - 1];
+    bool success = table_add_symbol(current_scope, symbol);
+
+    // If failed to add to table, symbol was already declared
+    if (!success){
+        display_declared_error(symbol->lex_value->value, symbol->lex_value->line);
+        CLEAN_EXIT(stack, ERR_DECLARED);
+    }
 }
 
 void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
@@ -73,18 +80,18 @@ void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
         if (declared_symbol == NULL)
             continue;
 
-        // Found: check for mistmaching types and kinds
+        // Found: check for mismatching types and kinds
         if (used_symbol->type != declared_symbol->type) {
             display_wrong_type_error(line);
-            exit(ERR_WRONG_TYPE);
+            CLEAN_EXIT(stack, ERR_WRONG_TYPE);
         }
         if (used_symbol->kind == FUNCTION && declared_symbol->kind == IDENTIFIER) {
             display_variable_error(label, line);
-            exit(ERR_VARIABLE);
+            CLEAN_EXIT(stack, ERR_VARIABLE);
         }
         if (used_symbol->kind == IDENTIFIER && declared_symbol->kind == FUNCTION) {
             display_function_error(label, line);
-            exit(ERR_FUNCTION);
+            CLEAN_EXIT(stack, ERR_FUNCTION); 
         }
 
         // All good
@@ -92,8 +99,8 @@ void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
     }
 
 	// Not found: undeclared identifier being used
-	display_undeclared_error(label, used_symbol->lex_value->line);
-	exit(ERR_UNDECLARED);
+	display_undeclared_error(label, line);
+	CLEAN_EXIT(stack, ERR_UNDECLARED);
 }
 
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol)

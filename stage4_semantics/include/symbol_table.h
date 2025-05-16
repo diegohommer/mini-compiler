@@ -1,6 +1,7 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
+#include <stdbool.h>
 #include <string.h>
 
 #include "asd.h"
@@ -65,15 +66,16 @@ symbol_table_t* table_new(void);
 void table_free(symbol_table_t* table);
 
 /**
- * @brief Adds a symbol to the symbol table.
+ * @brief Attempts to add a symbol to the symbol table.
  *
- * Checks if the symbol has already been declared by comparing its label with
- * existing entries. If a duplicate is found, raises ERR_DECLARED.
+ * Adds the given symbol to the table only if no symbol with the same label
+ * has already been declared in the current scope.
  *
  * @param table Pointer to the symbol table.
- * @param symbol Pointer to the symbol to be added.
+ * @param symbol Pointer to the symbol to add.
+ * @return true if the symbol was added successfully; false if a symbol with the same label already exists.
  */
-void table_add_symbol(symbol_table_t* table, symbol_t* symbol);
+bool table_add_symbol(symbol_table_t* table, symbol_t* symbol);
 
 /**
  * @brief Searches for a symbol in the symbol table.
@@ -95,7 +97,8 @@ symbol_t* table_get_symbol(symbol_table_t* table, const char* label);
  * @param kind The kind of the symbol (IDENTIFIER, LITERAL, or FUNCTION).
  * @param type The type of the symbol (INT, FLOAT, etc.).
  * @param lex_value Pointer to the lexical value to be copied.
- * @return Pointer to a newly allocated symbol containing its own internal copy of the lexical value.
+ * @return Pointer to a newly allocated symbol containing its own internal copy of the lexical
+ * value.
  */
 symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value);
 

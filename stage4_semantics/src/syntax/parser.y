@@ -24,6 +24,12 @@
   lexical_value_t* lexical_value;
 }
 
+%destructor {
+  if ($$ != NULL && $$ != tree) {
+    asd_free($$);
+  }
+} <tree>;
+
 %token TK_PR_AS
 %token TK_PR_DECLARE
 %token TK_PR_ELSE
