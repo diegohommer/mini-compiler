@@ -1,7 +1,6 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
-#include <stdbool.h>
 #include <string.h>
 
 #include "asd.h"
@@ -69,13 +68,14 @@ void table_free(symbol_table_t* table);
  * @brief Attempts to add a symbol to the symbol table.
  *
  * Adds the given symbol to the table only if no symbol with the same label
- * has already been declared in the current scope.
+ * has already been declared.
  *
  * @param table Pointer to the symbol table.
  * @param symbol Pointer to the symbol to add.
- * @return true if the symbol was added successfully; false if a symbol with the same label already exists.
+ * @return NULL if the symbol was added successfully;
+ *         pointer to the existing symbol with the same label if a duplicate exists.
  */
-bool table_add_symbol(symbol_table_t* table, symbol_t* symbol);
+symbol_t* table_add_symbol(symbol_table_t* table, symbol_t* symbol);
 
 /**
  * @brief Searches for a symbol in the symbol table.

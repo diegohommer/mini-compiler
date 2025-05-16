@@ -26,24 +26,24 @@ void table_free(symbol_table_t* table)
     free(table);
 }
 
-bool table_add_symbol(symbol_table_t* table, symbol_t* symbol)
+symbol_t* table_add_symbol(symbol_table_t* table, symbol_t* symbol)
 {
     if (table == NULL || symbol == NULL) {
         printf("Error: %s received NULL symbol table = %p / %p.\n", __FUNCTION__, table, symbol);
-        return true;
+        return NULL;
     }
 
     int i;
     // Check if a symbol with the same name has already been delcared in the current scope
     for (i = 0; i < table->num_symbols; i++) {
         if (strcmp(table->symbols[i]->lex_value->value, symbol->lex_value->value) == 0) {
-            return false;
+            return table->symbols[i];
         }
     }
     table->num_symbols++;
     table->symbols = realloc(table->symbols, table->num_symbols * sizeof(symbol_t*));
     table->symbols[table->num_symbols - 1] = symbol;
-    return true;
+    return NULL;
 
 }
 

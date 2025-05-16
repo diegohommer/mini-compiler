@@ -7,9 +7,10 @@ void display_undeclared_error(const char* label, int line)
     printf("Line %d: Error %d - Identifier %s not declared.\n", line, ERR_UNDECLARED, label);
 }
 
-void display_declared_error(const char* label, int line)
+void display_declared_error(const char* label, int line, int decl_line)
 {
-    printf("Line %d: Error %d - Identifier %s already declared.\n", line, ERR_DECLARED, label);
+    printf("Line %d: Error %d - Identifier %s already declared at line %d .\n", line, ERR_DECLARED,
+           label, decl_line);
 }
 
 void display_variable_error(const char* label, int line)

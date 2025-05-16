@@ -54,29 +54,31 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
     }
 
     symbol_table_t* current_scope = stack->tables[stack->num_tables - 1];
-    bool success = table_add_symbol(current_scope, symbol);
+    symbol_t* declared_symbol = table_add_symbol(current_scope, symbol);
 
     // If failed to add to table, symbol was already declared
-    if (!success){
-        display_declared_error(symbol->lex_value->value, symbol->lex_value->line);
+    if (declared_symbol != NULL) {
+        display_declared_error(symbol->lex_value->value, symbol->lex_value->line,
+                               declared_symbol->lex_value->line);
         CLEAN_EXIT(stack, ERR_DECLARED);
     }
 }
 
 void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
 {
-	if (stack == NULL || used_symbol == NULL) {
-		printf("Error: %s called with invalid stack or symbol.\n", __FUNCTION__);
-		return;
-	}
+    if (stack == NULL || used_symbol == NULL) {
+        printf("Error: %s called with invalid stack or symbol.\n", __FUNCTION__);
+        return;
+    }
 
-	const char* label = used_symbol->lex_value->value;
+    const char* label = used_symbol->lex_value->value;
     int line = used_symbol->lex_value->line;
-	symbol_t* declared_symbol = NULL;
+    symbol_t* declared_symbol = NULL;
 
-	// Search from innermost to outermost scope
+    // Search from innermost to outermost scope
     for (int i = stack->num_tables - 1; i >= 0; i--) {
         declared_symbol = table_get_symbol(stack->tables[i], label);
+
         if (declared_symbol == NULL)
             continue;
 
@@ -91,16 +93,16 @@ void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
         }
         if (used_symbol->kind == IDENTIFIER && declared_symbol->kind == FUNCTION) {
             display_function_error(label, line);
-            CLEAN_EXIT(stack, ERR_FUNCTION); 
+            CLEAN_EXIT(stack, ERR_FUNCTION);
         }
 
         // All good
         return;
     }
 
-	// Not found: undeclared identifier being used
-	display_undeclared_error(label, line);
-	CLEAN_EXIT(stack, ERR_UNDECLARED);
+    // Not found: undeclared identifier being used
+    display_undeclared_error(label, line);
+    CLEAN_EXIT(stack, ERR_UNDECLARED);
 }
 
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol)
