@@ -44,9 +44,9 @@ void scope_pop(scope_stack_t* stack);
 
 /**
  * @brief Declares a new symbol in the current scope.
- * 
- * Raises ERR_DECLARED if already declared in this scope.
- * 
+ *
+ * Exits with ERR_DECLARED if already declared in this scope.
+ *
  * @param stack Pointer to the scope stack.
  * @param symbol Symbol to declare.
  */
@@ -69,6 +69,19 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol);
  * @param param_symbol Pointer to the parameter symbol to be added.
  */
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol);
+
+/**
+ * @brief Validates if a symbol is being used correctly based on its declaration.
+ *
+ * Exits with ERR_UNDECLARED if the symbol is not declared in any scope.
+ * Exits with ERR_VARIABLE if the symbol is declared as a variable but is being used as a function.
+ * Exits with ERR_FUNCTION if the symbol is declared as a function but is being used as a variable.
+ * Exits with ERR_WRONG_TYPE if the symbol has a different type than expected for its usage.
+ *
+ * @param stack Pointer to the current scope stack.
+ * @param used_symbol Pointer to the symbol to be validated.
+ */
+void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol);
 
 /**
  * @brief Prints the contents of the scope stack for debugging purposes.
