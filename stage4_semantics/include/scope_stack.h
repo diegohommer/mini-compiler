@@ -12,100 +12,94 @@
 
 /**
  * @struct scope_stack_t
- * @brief Represents a stack of symbol tables used for managing nested scopes.
+ * @brief Stack of symbol tables representing nested scopes.
  */
 typedef struct {
-    symbol_table_t** tables; /**< Array of pointers to symbol tables (one per scope). */
-    int num_tables;          /**< Current number of tables (scopes) in the stack. */
+    symbol_table_t** tables; /**< Array of symbol table pointers, one per scope. */
+    int num_tables;          /**< Number of scopes currently in the stack. */
 } scope_stack_t;
 
 /**
  * @brief Creates and initializes an empty scope stack.
  *
- * @return Pointer to a newly allocated scope stack.
+ * @return Pointer to a new scope stack.
  */
 scope_stack_t* scope_stack_new(void);
 
 /**
- * @brief Frees all memory associated with the scope stack and its symbol tables.
+ * @brief Frees the scope stack and all contained symbol tables.
  *
- * @param stack Pointer to the scope stack to be freed.
+ * @param stack Pointer to the scope stack to free.
  */
 void scope_stack_free(scope_stack_t* stack);
 
 /**
- * @brief Pushes a new scope onto the stack.
- *
- * Creates a new, empty symbol table and appends it to the stack.
+ * @brief Pushes a new empty scope onto the stack.
  *
  * @param stack Pointer to the scope stack.
  */
 void scope_push(scope_stack_t* stack);
 
 /**
- * @brief Pops the top scope from the stack and frees its contents.
+ * @brief Pops and frees the top scope from the stack.
  *
  * @param stack Pointer to the scope stack.
  */
 void scope_pop(scope_stack_t* stack);
 
 /**
- * @brief Declares a new symbol in the current scope.
- *
- * Exits with ERR_DECLARED if already declared in this scope.
+ * @brief Declares a new symbol in the current (top) scope.
  *
  * @param stack Pointer to the scope stack.
  * @param symbol Symbol to declare.
+ *
+ * @note Exits with ERR_DECLARED if the symbol is already declared in this scope.
  */
 void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol);
 
 /**
- * @brief Declares a function parameter to the function currently being defined.
+ * @brief Declares a function parameter for the function currently being defined.
  *
- * This function assumes that:
- * - The function symbol was added to the scope *below* the current one.
- * - The parameter symbol is already created but not yet added to any scope.
+ * Assumes the function symbol is in the scope below the current one.
+ * Adds the parameter symbol to both the current scope and the function's parameter list.
  *
- * It adds the parameter symbol both to the current scope (as a local variable)
- * and to the parameter list of the function symbol (in the parent scope).
+ * @param stack Pointer to the scope stack.
+ * @param param_symbol Parameter symbol to declare.
  *
- * If the parent scope is empty or does not contain a function symbol as the last entry,
- * this function will raise an internal error.
- *
- * @param stack Pointer to the current scope stack.
- * @param param_symbol Pointer to the parameter symbol to be added.
  */
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol);
 
 /**
  * @brief Searches for a symbol by label in the scope stack.
  *
- * Searches from the innermost scope to the outermost.
+ * Searches from the innermost scope outward.
  *
- * @param stack Pointer to the current scope stack.
- * @param label The identifier name of the symbol.
- * @param line The line where the symbol is being used.
- * @return Pointer to the found symbol_t, or NULL if not found.
+ * @param stack Pointer to the scope stack.
+ * @param label Identifier name of the symbol.
+ * @param line Line number where the symbol is used.
+ * @return Pointer to the found symbol.
+ *
+ * @note Exits with ERR_UNDECLARED if the symbol is not found.
  */
 symbol_t* scope_get_symbol(scope_stack_t* stack, const char* label, int line);
 
 /**
- * @brief Validates if a symbol is being used correctly based on its declaration.
+ * @brief Validates symbol usage against its declaration.
  *
- * Exits with ERR_UNDECLARED if the symbol is not declared in any scope.
- * Exits with ERR_VARIABLE if the symbol is declared as a variable but is being used as a function.
- * Exits with ERR_FUNCTION if the symbol is declared as a function but is being used as a variable.
- * Exits with ERR_WRONG_TYPE if the symbol has a different type than expected for its usage.
+ * @param stack Pointer to the scope stack.
+ * @param used_symbol Symbol to validate.
  *
- * @param stack Pointer to the current scope stack.
- * @param used_symbol Pointer to the symbol to be validated.
+ * @note Exits with ERR_UNDECLARED if the symbol is undeclared.
+ * @note Exits with ERR_VARIABLE if a variable is used as a function.
+ * @note Exits with ERR_FUNCTION if a function is used as a variable.
+ * @note Exits with ERR_WRONG_TYPE if the symbol's type does not match expected usage.
  */
 void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol);
 
 /**
- * @brief Prints the contents of the scope stack for debugging purposes.
+ * @brief Prints the scope stack and symbols for debugging.
  *
- * Each scope is printed with its level and the symbols it contains.
+ * Shows each scope level and its contained symbols.
  *
  * @param stack Pointer to the scope stack.
  */

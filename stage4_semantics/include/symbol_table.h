@@ -7,11 +7,11 @@
 
 /**
  * @struct parameter_t
- * @brief Represents a parameter of a function.
+ * @brief Represents a function parameter.
  */
 typedef struct {
-    char* label; /**< Label (identifier) of the parameter */
-    type_t type; /**< Type of the parameter (INT or FLOAT) */
+    char* label; /**< Parameter identifier */
+    type_t type; /**< Parameter data type (INT, FLOAT, etc.) */
 } parameter_t;
 
 /**
@@ -19,19 +19,19 @@ typedef struct {
  * @brief Represents a list of function parameters.
  */
 typedef struct {
-    int num_parameters;       /**< Number of parameters in the list */
-    parameter_t** parameters; /**< Parameter vector */
+    int num_parameters;       /**< Number of parameters */
+    parameter_t** parameters; /**< Array of pointers to parameters */
 } parameters_t;
 
 /**
  * @struct symbol_t
- * @brief Represents a symbol entry in the symbol table.
+ * @brief Represents an entry in the symbol table.
  */
 typedef struct {
-    kind_t kind;                /**< Kind of the symbol (IDENTIFIER, LITERAL or FUNCTION). */
-    type_t type;                /**< Type of the symbol (INT or FLOAT). */
-    parameters_t* params;       /**< Function parameters if symbol is a function, NULL otherwise. */
-    lexical_value_t* lex_value; /**< Lexical value (identifier, line info, etc.). */
+    kind_t kind;                /**< Symbol kind (IDENTIFIER, LITERAL, FUNCTION) */
+    type_t type;                /**< Symbol data type */
+    parameters_t* params;       /**< Function parameters, or NULL if not a function */
+    lexical_value_t* lex_value; /**< Lexical value with identifier and position info */
 } symbol_t;
 
 /**
@@ -39,8 +39,8 @@ typedef struct {
  * @brief Represents a symbol table.
  */
 typedef struct {
-    symbol_t** symbols;
-    int num_symbols;
+    symbol_t** symbols; /**< Array of pointers to symbols */
+    int num_symbols;    /**< Number of symbols stored */
 } symbol_table_t;
 
 /**
@@ -51,93 +51,86 @@ typedef struct {
 symbol_table_t* table_new(void);
 
 /**
- * @brief Frees all memory associated with the symbol table and its contents.
+ * @brief Frees the symbol table and all associated symbols.
  *
- * @param table Pointer to the symbol table to be freed.
+ * @param table Pointer to the symbol table to free.
  */
 void table_free(symbol_table_t* table);
 
 /**
- * @brief Attempts to add a symbol to the symbol table.
+ * @brief Adds a symbol to the symbol table if not already declared.
  *
- * Adds the given symbol to the table only if no symbol with the same label
- * has already been declared.
+ * If a symbol with the same label exists, returns a pointer to it.
+ * Otherwise, adds the new symbol and returns NULL.
  *
  * @param table Pointer to the symbol table.
  * @param symbol Pointer to the symbol to add.
- * @return NULL if the symbol was added successfully;
- *         pointer to the existing symbol with the same label if a duplicate exists.
+ * @return NULL if symbol was added successfully; pointer to existing symbol if duplicate.
  */
 symbol_t* table_add_symbol(symbol_table_t* table, symbol_t* symbol);
 
 /**
- * @brief Searches for a symbol in the symbol table.
- *
- * Compares the given label against all entries in the table.
+ * @brief Searches for a symbol by label in the symbol table.
  *
  * @param table Pointer to the symbol table.
- * @param label Label/name of the identifier to look for.
- * @return Pointer to the matching symbol if found, NULL otherwise.
+ * @param label Symbol identifier to search for.
+ * @return Pointer to the symbol if found, or NULL otherwise.
  */
 symbol_t* table_get_symbol(symbol_table_t* table, const char* label);
 
 /**
- * @brief Creates a new symbol with the given kind, type, and lexical value.
+ * @brief Creates a new symbol with a deep copy of the lexical value.
  *
- * A deep copy of the given lexical value is created and stored within the symbol.
- * The parameter list is initialized to empty (NULL).
+ * Initializes the parameter list to NULL.
  *
- * @param kind The kind of the symbol (IDENTIFIER, LITERAL, or FUNCTION).
- * @param type The type of the symbol (INT, FLOAT, etc.).
- * @param lex_value Pointer to the lexical value to be copied.
- * @return Pointer to a newly allocated symbol containing its own internal copy of the lexical
- * value.
+ * @param kind The kind of symbol (IDENTIFIER, LITERAL, FUNCTION).
+ * @param type The data type of the symbol.
+ * @param lex_value Pointer to the lexical value to copy.
+ * @return Pointer to the newly allocated symbol.
  */
 symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value);
 
 /**
- * @brief Frees memory associated with the given symbol.
+ * @brief Frees the memory associated with a symbol.
  *
- * Recursively frees parameter list (if any) and the internal copy of the lexical value.
- * Does not affect the original lexical value passed to `symbol_new`, as a deep copy
- * was made during construction.
+ * Also frees the parameter list (if any) and the copied lexical value.
  *
- * @param symbol Pointer to the symbol to be freed.
+ * @param symbol Pointer to the symbol to free.
  */
 void symbol_free(symbol_t* symbol);
 
 /**
  * @brief Adds a parameter to a function symbol's parameter list.
  *
- * If the parameter list is NULL, a new one is created.
+ * Creates the parameter list if it does not exist.
  *
- * @param symbol Pointer to the symbol (must be a function).
- * @param param Pointer to the parameter to be added.
+ * @param symbol Pointer to the function symbol.
+ * @param param Pointer to the parameter to add.
  */
 void symbol_add_parameter(symbol_t* symbol, parameter_t* param);
 
 /**
- * @brief Prints the contents of the symbol table for debugging purposes.
+ * @brief Prints the symbol table contents for debugging.
  *
- * Each symbol is displayed with relevant metadata such as label, type, and declaration line.
+ * Displays each symbol's label, type, and other metadata.
  *
- * @param table Pointer to the symbol table to print.
+ * @param table Pointer to the symbol table.
  */
 void symbol_table_debug_print(symbol_table_t* table);
 
 /**
  * @brief Creates a new function parameter.
  *
- * Allocates and initializes a parameter structure.
+ * Allocates and initializes a parameter with the given label and type.
  *
- * @return Pointer to the new parameter.
+ * @param label The parameter's identifier.
+ * @param type The parameter's data type.
+ * @return Pointer to the newly created parameter.
  */
 parameter_t* parameter_new(const char* label, type_t type);
 
 /**
- * @brief Frees a parameter.
- *
- * Releases memory used by the parameter.
+ * @brief Frees a function parameter.
  *
  * @param param Pointer to the parameter to free.
  */
