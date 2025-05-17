@@ -55,12 +55,11 @@ void display_atribution_type_error(int assign_line, int decl_line, const char* v
 void display_return_type_error(int return_line, int func_line, const char* func_name, int type_decl,
                                int type_used)
 {
-    fprintf(
-        stderr,
-        "Line %d: Error %d (TYPE_MISMATCH_ERROR) - Return type in function '%s' declared at line "
-        "%d is '%s', but got '%s'.\n",
-        return_line, ERR_WRONG_TYPE, func_name, func_line, type_to_string(type_decl),
-        type_to_string(type_used));
+    fprintf(stderr,
+            "Line %d: Error %d (TYPE_MISMATCH_ERROR) - Return type mismatch in function '%s' "
+            "declared at line %d: expected '%s' but got '%s'.\n",
+            return_line, ERR_WRONG_TYPE, func_name, func_line, type_to_string(type_decl),
+            type_to_string(type_used));
 }
 
 void display_if_else_type_error(int line, int type_if, int type_else)
@@ -97,14 +96,14 @@ void display_excess_args_error(int call_line, int decl_line, const char* func_na
 }
 
 void display_wrong_type_args_error(int call_line, int decl_line, const char* func_name,
-                                   int param_index, int expected_type, int provided_type)
+                                   int param_index, const char* arg_label, int expected_type,
+                                   int provided_type)
 {
-    fprintf(
-        stderr,
-        "Line %d: Error %d (ERR_WRONG_TYPE_ARGS) - Argument %d of function '%s' declared at line "
-        "%d: expected '%s' but got '%s'.\n",
-        call_line, ERR_WRONG_TYPE_ARGS, param_index, func_name, decl_line,
-        type_to_string(expected_type), type_to_string(provided_type));
+    fprintf(stderr,
+            "Line %d: Error %d (ERR_WRONG_TYPE_ARGS) - Expected '%s' but got '%s' for argument %d "
+            "('%s') of function '%s' declared at line %d.\n",
+            call_line, ERR_WRONG_TYPE_ARGS, type_to_string(expected_type),
+            type_to_string(provided_type), param_index, arg_label, func_name, decl_line);
 }
 
 const char* type_to_string(int type)

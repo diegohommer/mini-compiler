@@ -29,7 +29,8 @@ void display_missing_args_error(int call_line, int decl_line, const char* func_n
 void display_excess_args_error(int call_line, int decl_line, const char* func_name, int expected,
                                int got);
 void display_wrong_type_args_error(int call_line, int decl_line, const char* func_name,
-                                   int param_index, int expected_type, int provided_type);
+                                   int param_index, const char* param_name, int expected_type,
+                                   int provided_type);
 
 // Utils
 const char* type_to_string(int type);

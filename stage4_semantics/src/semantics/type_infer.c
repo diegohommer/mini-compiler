@@ -74,8 +74,9 @@ type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* cal
         type_t expected_type = function_symbol->params->parameters[i]->type;
         type_t provided_type = arg->data_type;
         if (expected_type != provided_type) {
-            display_wrong_type_args_error(call_id->line, function_symbol->lex_value->line,
-                                          call_id->value, i + 1, expected_type, provided_type);
+            display_wrong_type_args_error(
+                call_id->line, function_symbol->lex_value->line, call_id->value, i + 1,
+                function_symbol->params->parameters[i]->label, expected_type, provided_type);
             CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE_ARGS);
         }
 
