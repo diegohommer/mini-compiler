@@ -20,7 +20,8 @@ type_t infer_atribution_type(scope_stack_t* scope_stack, lexical_value_t* var_id
     }
 
     if (var_decl->type != exp_type) {
-        display_atribution_type_error(var_id->line, var_decl->lex_value->line, var_id->value, var_decl->type, exp_type);
+        display_atribution_type_error(var_id->line, var_decl->lex_value->line, var_id->value,
+                                      var_decl->type, exp_type);
         CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
     }
 
@@ -91,7 +92,8 @@ type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* cal
 type_t infer_return_type(scope_stack_t* scope_stack, asd_tree_t* return_expr, type_t declared_type)
 {
     if (return_expr->data_type != declared_type) {
-        display_atribution_type_error(return_expr->lexical_payload->line, return_expr->label,
+        display_atribution_type_error(return_expr->lexical_payload->line,
+                                      return_expr->lexical_payload->line, return_expr->label,
                                       declared_type, return_expr->data_type);
         CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
     }

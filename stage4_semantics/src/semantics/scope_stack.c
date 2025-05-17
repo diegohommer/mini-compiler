@@ -80,21 +80,21 @@ symbol_t* scope_get_current_function(scope_stack_t* stack)
             "Error: %s Not enough scopes to find function symbol (expected parent scope below "
             "parameters).\n",
             __FUNCTION__);
-        return;
+        return NULL;
     }
 
-    symbol_table_t* function_decl_table = stack->tables[stack->num_tables - 2];
+    symbol_table_t* function_decl_table = stack->tables[0];
     if (function_decl_table->num_symbols == 0) {
         printf("Error: %s expected at least one symbol in the function declaration scope.\n",
                __FUNCTION__);
-        return;
+        return NULL;
     }
 
     symbol_t* func_symbol = function_decl_table->symbols[function_decl_table->num_symbols - 1];
     if (func_symbol->kind != FUNCTION) {
         printf("Error: %s expected last symbol in function declaration scope to be a function.\n",
                __FUNCTION__);
-        return;
+        return NULL;
     }
 
     return func_symbol;

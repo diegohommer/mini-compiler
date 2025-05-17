@@ -3,7 +3,7 @@ declare a as int, declare b as int, declare c as float, declare d as float,
 my_function returns int is [
     a is 5 + 3
     b is a - 2
-    c is b * 4.5
+    c is 1.0 * 4.5
     d is c / 2.0
     a is a % 3
     b is a & b

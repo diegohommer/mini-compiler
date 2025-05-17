@@ -152,8 +152,8 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type {
 
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
-  type_t var_type = infer_initialization_type(scope_stack, $2, $4, $6);
-  $$ = make_tree("with", var_type, NULL, 2, id_tree, $6);
+  type_t var_type = infer_initialization_type(scope_stack, $2, $4, $6->data_type);
+  $$ = make_tree("with", var_type, NULL, 2, asd_new($2->value, var_type, $2), $6);
   scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, var_type, $2));
   free_lex_value($2);
 }
