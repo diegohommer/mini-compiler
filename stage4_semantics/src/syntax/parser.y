@@ -10,6 +10,7 @@
   int yylex(void);
   void yyerror (char const *mensagem);
   asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int num_children, ...);
+  asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op, asd_tree_t* right);
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
   type_t get_token_type(lexical_value_t* lexical_value);
   void free_lex_value(lexical_value_t* lexical_value);
@@ -220,17 +221,17 @@ while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
 exp: n7 { $$ = $1; };
 
 // PRECEDENCE 7 (LOWEST) - Bitwise OR
-n7: n7 '|' n6 { $$ = make_tree("|", infer_exp_type(scope_stack, "|", $1, $3), $1->lexical_payload , 2, $1, $3);}
+n7: n7 '|' n6 { $$ = make_exp_tree($1, "|", $3);}
   | n6 { $$ = $1; };
 
 // PRECEDENCE 6 - Bitwise AND
-n6: n6 '&' n5 { $$ = make_tree("&", infer_exp_type(scope_stack, "&", $1, $3), $1->lexical_payload, 2, $1, $3);}
+n6: n6 '&' n5 { $$ = make_exp_tree($1, "&", $3);}
   | n5 { $$ = $1; };
 
 // PRECEDENCE 5 - Comparison (==, !=)
 prec5_ops: TK_OC_EQ { $$ = "=="; } 
          | TK_OC_NE { $$ = "!="; };
-n5: n5 prec5_ops n4 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), $1->lexical_payload, 2, $1, $3);}
+n5: n5 prec5_ops n4 { $$ = make_exp_tree($1, $2, $3); }
   | n4 { $$ = $1; };
 
 // PRECEDENCE 4 - Comparison (<, >, <=, >=)
@@ -238,21 +239,21 @@ prec4_ops: '<' { $$ = "<"; }
          | '>' { $$ = ">"; } 
          | TK_OC_LE { $$ = "<="; } 
          | TK_OC_GE { $$ = ">="; };
-n4: n4 prec4_ops n3 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), $1->lexical_payload, 2, $1, $3); }
+n4: n4 prec4_ops n3 { $$ = make_exp_tree($1, $2, $3); }
   | n3 { $$ = $1; };
 
 
 // PRECEDENCE 3 - Addition & Subtraction (+, -)
 prec3_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; };
-n3: n3 prec3_ops n2 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), $1->lexical_payload, 2, $1, $3); }
+n3: n3 prec3_ops n2 { $$ = make_exp_tree($1, $2, $3); }
   | n2 { $$ = $1; };
 
 // PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %)
 prec2_ops: '*' { $$ = "*"; } 
          | '/' { $$ = "/"; } 
          | '%' { $$ = "%"; };
-n2: n2 prec2_ops n1 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), $1->lexical_payload, 2, $1, $3); }
+n2: n2 prec2_ops n1 { $$ = make_exp_tree($1, $2, $3); }
   | n1 { $$ = $1; };
 
 // PRECEDENCE 1 - Unary Operators (+, -, !)
@@ -283,7 +284,7 @@ literal: TK_LI_INT { $$ = asd_new($1->value, INT, $1); free_lex_value($1); }
 
 // SCOPE NON-TERMINALS - For creating and destroying symbol tables on a given scope
 create_scope: %empty { scope_push(scope_stack); };
-destroy_scope: %empty { scope_stack_debug_print(scope_stack); scope_pop(scope_stack); };
+destroy_scope: %empty { /*scope_stack_debug_print(scope_stack);*/ scope_pop(scope_stack); };
 %%
 
 void yyerror(const char *message){
@@ -305,6 +306,12 @@ asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int 
 
 	va_end(args);
 	return parent;
+}
+
+asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op, asd_tree_t* right)
+{
+  type_t exp_type = infer_exp_type(scope_stack, op, left, right);
+  return make_tree(op, exp_type, left->lexical_payload, 2, left, right);
 }
 
 asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail) {
