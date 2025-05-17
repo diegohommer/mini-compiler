@@ -36,6 +36,14 @@ void display_expression_type_error(int line, const char* op, int type1, int type
            line, ERR_WRONG_TYPE, op, type_to_string(type1), type_to_string(type2));
 }
 
+void display_return_type_error(int return_line, int func_line, const char* func_name,
+                               int type_decl, int type_used)
+{
+    printf("Line %d: Error %d (TYPE_MISMATCH_ERROR) - Return type in function '%s' declared at line %d is '%s', but got '%s'.\n",
+           return_line, ERR_WRONG_TYPE, func_name, func_line,
+           type_to_string(type_decl), type_to_string(type_used));
+}
+
 void display_if_else_type_error(int line, int type_if, int type_else)
 {
     printf(

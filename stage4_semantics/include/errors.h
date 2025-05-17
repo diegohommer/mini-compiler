@@ -18,7 +18,8 @@ void display_variable_error(const char* label, int used_line_number, int declare
 void display_function_error(const char* label, int used_line_number, int declared_line_number);
 void display_expression_type_error(int line, const char* op, int type_left, int type_right);
 void display_assignment_type_error(int line, const char* var, int type_decl, int type_used);
-void display_return_type_error(int line, const char* func, int type_decl, int type_used);
+void display_return_type_error(int return_line, int func_line, const char* func_name, int type_decl,
+                               int type_used);
 void display_if_else_type_error(int if_line, int type_if, int type_else);
 void display_missing_args_error(int line_number);
 void display_excess_args_error(int line_number);

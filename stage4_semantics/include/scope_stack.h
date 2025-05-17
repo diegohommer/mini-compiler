@@ -70,6 +70,17 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol);
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol);
 
 /**
+ * @brief Retrieves the function symbol of the function whose scope is currently active.
+ *
+ * Assumes that the function symbol is stored in the scope immediately below the current scope,
+ * and is the last symbol declared in that scope.
+ *
+ * @param stack Pointer to the scope stack.
+ * @return Pointer to the function symbol currently being defined, or NULL if not found.
+ */
+symbol_t* scope_get_current_function(scope_stack_t* stack);
+
+/**
  * @brief Searches for a symbol by label in the scope stack.
  *
  * Searches from the innermost scope outward.

@@ -64,6 +64,42 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
     }
 }
 
+void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol)
+{
+    symbol_t* func_symbol = scope_get_current_function(stack);
+    parameter_t* new_param = parameter_new(param_symbol->lex_value->value, param_symbol->type);
+
+    symbol_add_parameter(func_symbol, new_param);
+    table_add_symbol(stack->tables[stack->num_tables - 1], param_symbol);
+}
+
+symbol_t* scope_get_current_function(scope_stack_t* stack)
+{
+    if (stack == NULL || stack->num_tables < 2) {
+        printf(
+            "Error: %s Not enough scopes to find function symbol (expected parent scope below "
+            "parameters).\n",
+            __FUNCTION__);
+        return;
+    }
+
+    symbol_table_t* function_decl_table = stack->tables[stack->num_tables - 2];
+    if (function_decl_table->num_symbols == 0) {
+        printf("Error: %s expected at least one symbol in the function declaration scope.\n",
+               __FUNCTION__);
+        return;
+    }
+
+    symbol_t* func_symbol = function_decl_table->symbols[function_decl_table->num_symbols - 1];
+    if (func_symbol->kind != FUNCTION) {
+        printf("Error: %s expected last symbol in function declaration scope to be a function.\n",
+               __FUNCTION__);
+        return;
+    }
+
+    return func_symbol;
+}
+
 symbol_t* scope_get_symbol(scope_stack_t* stack, const char* label, int line)
 {
     // Search from innermost to outermost scope
@@ -109,36 +145,6 @@ void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
 
     // All good
     return;
-}
-
-void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol)
-{
-    if (stack == NULL || stack->num_tables < 2) {
-        printf(
-            "Error: %s Not enough scopes to find function symbol (expected parent scope below "
-            "parameters).\n",
-            __FUNCTION__);
-        return;
-    }
-
-    symbol_table_t* function_decl_table = stack->tables[stack->num_tables - 2];
-    if (function_decl_table->num_symbols == 0) {
-        printf("Error: %s expected at least one symbol in the function declaration scope.\n",
-               __FUNCTION__);
-        return;
-    }
-
-    symbol_t* func_symbol = function_decl_table->symbols[function_decl_table->num_symbols - 1];
-    if (func_symbol->kind != FUNCTION) {
-        printf("Error: %s expected last symbol in function declaration scope to be a function.\n",
-               __FUNCTION__);
-        return;
-    }
-
-    parameter_t* new_param = parameter_new(param_symbol->lex_value->value, param_symbol->type);
-
-    symbol_add_parameter(func_symbol, new_param);
-    table_add_symbol(stack->tables[stack->num_tables - 1], param_symbol);
 }
 
 void scope_stack_debug_print(scope_stack_t* stack)
