@@ -12,8 +12,6 @@
   asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int num_children, ...);
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
   type_t get_token_type(lexical_value_t* lexical_value);
-  void check_if_else_type(asd_tree_t* if_block, asd_tree_t* else_block);
-  type_t infer_exp_type(const char* op, asd_tree_t* exp_left, asd_tree_t* exp_right);
   void free_lex_value(lexical_value_t* lexical_value);
 
   extern int get_line_number(void);
@@ -218,17 +216,17 @@ while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
 exp: n7 { $$ = $1; };
 
 // PRECEDENCE 7 (LOWEST) - Bitwise OR
-n7: n7 '|' n6 { $$ = make_tree("|", infer_exp_type("|", $1, $3), NULL, 2, $1, $3);}
+n7: n7 '|' n6 { $$ = make_tree("|", infer_exp_type(scope_stack, "|", $1, $3), NULL, 2, $1, $3);}
   | n6 { $$ = $1; };
 
 // PRECEDENCE 6 - Bitwise AND
-n6: n6 '&' n5 { $$ = make_tree("&", infer_exp_type("&", $1, $3), NULL, 2, $1, $3);}
+n6: n6 '&' n5 { $$ = make_tree("&", infer_exp_type(scope_stack, "&", $1, $3), NULL, 2, $1, $3);}
   | n5 { $$ = $1; };
 
 // PRECEDENCE 5 - Comparison (==, !=)
 prec5_ops: TK_OC_EQ { $$ = "=="; } 
          | TK_OC_NE { $$ = "!="; };
-n5: n5 prec5_ops n4 { $$ = make_tree($2, infer_exp_type($2, $1, $3), NULL, 2, $1, $3);}
+n5: n5 prec5_ops n4 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), NULL, 2, $1, $3);}
   | n4 { $$ = $1; };
 
 // PRECEDENCE 4 - Comparison (<, >, <=, >=)
@@ -236,21 +234,21 @@ prec4_ops: '<' { $$ = "<"; }
          | '>' { $$ = ">"; } 
          | TK_OC_LE { $$ = "<="; } 
          | TK_OC_GE { $$ = ">="; };
-n4: n4 prec4_ops n3 { $$ = make_tree($2, infer_exp_type($2, $1, $3), NULL, 2, $1, $3); }
+n4: n4 prec4_ops n3 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), NULL, 2, $1, $3); }
   | n3 { $$ = $1; };   
 
 
 // PRECEDENCE 3 - Addition & Subtraction (+, -)
 prec3_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; };
-n3: n3 prec3_ops n2 { $$ = make_tree($2, infer_exp_type($2, $1, $3), NULL, 2, $1, $3); }
+n3: n3 prec3_ops n2 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), NULL, 2, $1, $3); }
   | n2 { $$ = $1; };
 
 // PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %)
 prec2_ops: '*' { $$ = "*"; } 
          | '/' { $$ = "/"; } 
          | '%' { $$ = "%"; };
-n2: n2 prec2_ops n1 { $$ = make_tree($2, infer_exp_type($2, $1, $3), NULL, 2, $1, $3); }
+n2: n2 prec2_ops n1 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), NULL, 2, $1, $3); }
   | n1 { $$ = $1; };
 
 // PRECEDENCE 1 - Unary Operators (+, -, !)
@@ -288,7 +286,7 @@ void yyerror(const char *message){
   fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
 }
 
-asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int num_children, ...){
+asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int num_children, ...) {
   asd_tree_t* parent = asd_new(label, type, val);
 
 	va_list args;
@@ -305,7 +303,7 @@ asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int 
 	return parent;
 }
 
-asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail){
+asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail) {
   if(head == NULL){
     return tail;
   }else {
@@ -314,29 +312,12 @@ asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail){
   }
 }
 
-type_t get_token_type(lexical_value_t* lexical_value){
+type_t get_token_type(lexical_value_t* lexical_value) {
   symbol_t* decl_symbol = scope_get_symbol(scope_stack, lexical_value->value, lexical_value->line);
   return decl_symbol->type;
 }
 
-void check_if_else_type(asd_tree_t* if_block, asd_tree_t* else_block){
-  if (if_block->data_type != else_block->data_type){
-    display_if_else_type_error(if_block->lexical_payload->line, else_block->lexical_payload->line,
-                               if_block->data_type, else_block->data_type);
-    CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
-  }
-}
-
-type_t infer_exp_type(const char* op, asd_tree_t* tree_left, asd_tree_t* tree_right){
-  if (tree_left->data_type != tree_right->data_type){
-    display_expression_type_error(tree_left->lexical_payload->line, op, 
-                                  tree_left->data_type, tree_right->data_type);
-    CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
-  }
-  return tree_left->data_type;
-}
-
-void free_lex_value(lexical_value_t* lexical_value){
+void free_lex_value(lexical_value_t* lexical_value) {
   free(lexical_value->value);
   free(lexical_value);
 }

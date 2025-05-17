@@ -13,7 +13,7 @@ CFLAGS = -I$(IDIR) -Wall -Werror -fsanitize=address
 
 
 # Files
-_DEPS = parser.tab.h asd.h symbol_table.h scope_stack.h errors.h
+_DEPS = parser.tab.h asd.h symbol_table.h scope_stack.h type_infer.h errors.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 # Source files (including generated ones)
