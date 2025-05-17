@@ -4,13 +4,6 @@
 #include <string.h>
 
 #include "asd.h"
-#include "errors.h"
-
-/**
- * @enum type_t
- * @brief Represents the type of a symbol (e.g., INT or FLOAT).
- */
-typedef enum { INT = 0, FLOAT = 1 } type_t;
 
 /**
  * @struct parameter_t

@@ -4,12 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-asd_tree_t *asd_new(const char *label, lexical_value_t *payload)
+asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payload)
 {
     asd_tree_t *ret = NULL;
     ret = calloc(1, sizeof(asd_tree_t));
     if (ret != NULL) {
         ret->label = strdup(label);
+        ret->data_type = (int)data_type;
         ret->number_of_children = 0;
         ret->children = NULL;
         if (payload != NULL) {

@@ -5,6 +5,12 @@
 #include <stdlib.h>
 
 /**
+ * @enum type_t
+ * @brief Represents the type of a symbol (e.g., INT or FLOAT).
+ */
+typedef enum { INT = 0, FLOAT = 1 } type_t;
+
+/**
  * @enum kind_t
  * @brief Represents the kind of a symbol in the abstract syntax tree (AST).
  */
@@ -16,7 +22,7 @@ typedef enum { IDENTIFIER = 1, LITERAL = 2, FUNCTION = 3 } kind_t;
  */
 typedef struct lexical_value {
     int line;    /**< Line number in the source code. */
-    int type;    /**< Token type (IDENTIFIER or LITERAL). */
+    int type;    /**< Token kind/type (IDENTIFIER or LITERAL). */
     char *value; /**< Lexeme (string value). */
 } lexical_value_t;
 
@@ -26,6 +32,7 @@ typedef struct lexical_value {
  */
 typedef struct asd_tree {
     char *label;                      /**< Label for the node. */
+    int data_type;                    /**< Data type of the node (INT or FLOAT) */
     int number_of_children;           /**< Number of child nodes. */
     struct asd_tree **children;       /**< Array of pointers to child nodes. */
     lexical_value_t *lexical_payload; /**< Lexical value associated with this node, if any. */
@@ -38,10 +45,11 @@ typedef struct asd_tree {
  * this call.
  *
  * @param label Label for the node.
+ * @param data_type The data type (e.g., INT or FLOAT) associated with this node.
  * @param payload Lexical payload (optional).
  * @return Pointer to a new AST node.
  */
-asd_tree_t *asd_new(const char *label, lexical_value_t *payload);
+asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payload);
 
 /**
  * @brief Frees the AST node and its children.

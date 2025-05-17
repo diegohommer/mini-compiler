@@ -7,6 +7,7 @@
         exit(code);              \
     } while (0)
 
+#include "errors.h"
 #include "symbol_table.h"
 
 /**
