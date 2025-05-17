@@ -64,6 +64,21 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
     }
 }
 
+symbol_t* scope_get_symbol(scope_stack_t* stack, const char* label, int line)
+{
+    // Search from innermost to outermost scope
+    for (int i = stack->num_tables - 1; i >= 0; i--) {
+        symbol_t* declared_symbol = table_get_symbol(stack->tables[i], label);
+        if (declared_symbol != NULL) {
+            return declared_symbol;
+        }
+    }
+
+    // Not found: undeclared identifier being used
+    display_undeclared_error(label, line);
+    CLEAN_EXIT(stack, ERR_UNDECLARED);
+}
+
 void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
 {
     if (stack == NULL || used_symbol == NULL) {
@@ -73,36 +88,28 @@ void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
 
     const char* label = used_symbol->lex_value->value;
     int line = used_symbol->lex_value->line;
-    symbol_t* declared_symbol = NULL;
+    symbol_t* declared_symbol =
+        scope_get_symbol(stack, used_symbol->lex_value->value, used_symbol->lex_value->line);
 
-    // Search from innermost to outermost scope
-    for (int i = stack->num_tables - 1; i >= 0; i--) {
-        declared_symbol = table_get_symbol(stack->tables[i], label);
-
-        if (declared_symbol == NULL)
-            continue;
-
-        // Found: check for mismatching types and kinds
-        if (used_symbol->type != declared_symbol->type) {
-            display_wrong_type_error(line);
-            CLEAN_EXIT(stack, ERR_WRONG_TYPE);
-        }
-        if (used_symbol->kind == FUNCTION && declared_symbol->kind == IDENTIFIER) {
-            display_variable_error(label, line);
-            CLEAN_EXIT(stack, ERR_VARIABLE);
-        }
-        if (used_symbol->kind == IDENTIFIER && declared_symbol->kind == FUNCTION) {
-            display_function_error(label, line);
-            CLEAN_EXIT(stack, ERR_FUNCTION);
-        }
-
-        // All good
-        return;
+    // Found: check for mismatching types and kinds
+    if (used_symbol->type != declared_symbol->type) {
+        display_wrong_type_error(line);
+        symbol_free(used_symbol);
+        CLEAN_EXIT(stack, ERR_WRONG_TYPE);
+    }
+    if (used_symbol->kind == FUNCTION && declared_symbol->kind == IDENTIFIER) {
+        display_variable_error(label, line);
+        symbol_free(used_symbol);
+        CLEAN_EXIT(stack, ERR_VARIABLE);
+    }
+    if (used_symbol->kind == IDENTIFIER && declared_symbol->kind == FUNCTION) {
+        display_function_error(label, line);
+        symbol_free(used_symbol);
+        CLEAN_EXIT(stack, ERR_FUNCTION);
     }
 
-    // Not found: undeclared identifier being used
-    display_undeclared_error(label, line);
-    CLEAN_EXIT(stack, ERR_UNDECLARED);
+    // All good
+    return;
 }
 
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol)

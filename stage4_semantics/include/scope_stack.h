@@ -77,6 +77,18 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol);
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol);
 
 /**
+ * @brief Searches for a symbol by label in the scope stack.
+ *
+ * Searches from the innermost scope to the outermost.
+ *
+ * @param stack Pointer to the current scope stack.
+ * @param label The identifier name of the symbol.
+ * @param line The line where the symbol is being used.
+ * @return Pointer to the found symbol_t, or NULL if not found.
+ */
+symbol_t* scope_get_symbol(scope_stack_t* stack, const char* label, int line);
+
+/**
  * @brief Validates if a symbol is being used correctly based on its declaration.
  *
  * Exits with ERR_UNDECLARED if the symbol is not declared in any scope.
