@@ -20,6 +20,25 @@ type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* ex
                       asd_tree_t* exp_right);
 
 /**
+ * @brief Infers and validates the return type of a function call expression.
+ *
+ * Checks if the called function exists, and verifies the number and types
+ * of arguments against the function's parameter list as registered in the symbol table.
+ *
+ * @param scope_stack Pointer to the scope stack.
+ * @param func_name   Name of the function being called.
+ * @param call_args   AST node representing the list of arguments in the function call.
+ * @return The return type of the function if the call is valid.
+ *
+ * @note Exits with ERR_UNDECLARED if the function is not declared.
+ * @note Exits with ERR_VARIABLE if the identifier used is that of a variable.
+ * @note Exits with ERR_MISSING_ARGS if too few arguments are provided.
+ * @note Exits with ERR_EXCESS_ARGS if too many arguments are provided.
+ * @note Exits with ERR_WRONG_TYPE_ARGS if any argument type does not match the expected parameter type.
+ */
+type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* call_id, asd_tree_t* call_args);
+
+/**
  * @brief Infers and validates the return expression type considering user declaration and function
  * return type.
  *

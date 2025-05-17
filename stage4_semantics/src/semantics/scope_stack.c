@@ -115,38 +115,6 @@ symbol_t* scope_get_symbol(scope_stack_t* stack, const char* label, int line)
     CLEAN_EXIT(stack, ERR_UNDECLARED);
 }
 
-void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
-{
-    if (stack == NULL || used_symbol == NULL) {
-        printf("Error: %s called with invalid stack or symbol.\n", __FUNCTION__);
-        return;
-    }
-
-    const char* label = used_symbol->lex_value->value;
-    int line = used_symbol->lex_value->line;
-    symbol_t* declared_symbol = scope_get_symbol(stack, label, line);
-
-    // Found: check for mismatching types and kinds
-    if (used_symbol->type != declared_symbol->type) {
-        display_wrong_type_error(line);
-        symbol_free(used_symbol);
-        CLEAN_EXIT(stack, ERR_WRONG_TYPE);
-    }
-    if (used_symbol->kind == FUNCTION && declared_symbol->kind == IDENTIFIER) {
-        display_variable_error(label, line, declared_symbol->lex_value->line);
-        symbol_free(used_symbol);
-        CLEAN_EXIT(stack, ERR_VARIABLE);
-    }
-    if (used_symbol->kind == IDENTIFIER && declared_symbol->kind == FUNCTION) {
-        display_function_error(label, line, declared_symbol->lex_value->line);
-        symbol_free(used_symbol);
-        CLEAN_EXIT(stack, ERR_FUNCTION);
-    }
-
-    // All good
-    return;
-}
-
 void scope_stack_debug_print(scope_stack_t* stack)
 {
     if (!stack) {

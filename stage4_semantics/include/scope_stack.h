@@ -95,19 +95,6 @@ symbol_t* scope_get_current_function(scope_stack_t* stack);
 symbol_t* scope_get_symbol(scope_stack_t* stack, const char* label, int line);
 
 /**
- * @brief Validates symbol usage against its declaration.
- *
- * @param stack Pointer to the scope stack.
- * @param used_symbol Symbol to validate.
- *
- * @note Exits with ERR_UNDECLARED if the symbol is undeclared.
- * @note Exits with ERR_VARIABLE if a variable is used as a function.
- * @note Exits with ERR_FUNCTION if a function is used as a variable.
- * @note Exits with ERR_WRONG_TYPE if the symbol's type does not match expected usage.
- */
-void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol);
-
-/**
  * @brief Prints the scope stack and symbols for debugging.
  *
  * Shows each scope level and its contained symbols.

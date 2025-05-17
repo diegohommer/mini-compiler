@@ -5,7 +5,7 @@
   #include <stdarg.h>
   #include <stddef.h>
 
-  #include "scope_stack.h"
+  #include "type_infer.h"
 
   int yylex(void);
   void yyerror (char const *mensagem);
@@ -172,7 +172,10 @@ func_call: TK_ID call_args {
   int len = strlen("call ") + strlen($1->value) + 1;
   char *buffer = malloc(len);
   snprintf(buffer, len, "call %s", $1->value);
-  $$ = make_tree(buffer, $1, 1, $2);
+
+  int call_type = infer_function_call_type(scope_stack, $1, $2);
+  $$ = make_tree(buffer, call_type, $1, 1, $2);
+
   free_lex_value($1);
   free(buffer);
 };
@@ -187,15 +190,16 @@ call_args_list: exp { $$ = $1; }
 
 // RETURN COMMAND - Defines return statement with an expression and its type.
 return_cmd: TK_PR_RETURN exp TK_PR_AS type {
-  $$ = make_tree("return", $4, NULL, 1, $2);
+  int return_type = infer_return_type(scope_stack, $2, $4);
+  $$ = make_tree("return", return_type, NULL, 1, $2);
 };
 
 
 // CONDITIONAL - Defines an if-else structure (optional else)
 if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
-  if ($6 != NULL) check_if_else_type($5, $6);
-  $$ = make_tree("if", $3->data_type, NULL, 3, $3, $5, $6);
-};
+  int if_type = infer_if_type(scope_stack, $3->data_type, $5, $6);
+  $$ = make_tree("if", if_type, NULL, 3, $3, $5, $6);
+}; 
 
 else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
         | %empty { $$ = NULL; };

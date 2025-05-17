@@ -52,19 +52,24 @@ void display_if_else_type_error(int line, int type_if, int type_else)
         line, ERR_WRONG_TYPE, type_to_string(type_if), type_to_string(type_else));
 }
 
-void display_missing_args_error(int line)
+void display_missing_args_error(int call_line, int decl_line, const char* func_name, int expected, int got)
 {
-    printf("Line %d: Error %d - Missing function arguments.\n", line, ERR_MISSING_ARGS);
+    printf("Line %d: Error %d (ERR_MISSING_ARGS) - Too few arguments to function '%s' declared at line %d; expected %d but got %d.\n",
+           call_line, ERR_MISSING_ARGS, func_name, decl_line, expected, got);
 }
 
-void display_excess_args_error(int line)
+void display_excess_args_error(int call_line, int decl_line, const char* func_name, int expected, int got)
 {
-    printf("Line %d: Error %d - Too many function arguments.\n", line, ERR_EXCESS_ARGS);
+    printf("Line %d: Error %d (ERR_EXCESS_ARGS) - Too many arguments to function '%s' declared at line %d; expected %d but got %d.\n",
+           call_line, ERR_EXCESS_ARGS, func_name, decl_line, expected, got);
 }
 
-void display_wrong_type_args_error(int line)
+void display_wrong_type_args_error(int call_line, int decl_line, const char* func_name, int param_index,
+                                   int expected_type, int provided_type)
 {
-    printf("Line %d: Error %d - Incompatible argument types.\n", line, ERR_WRONG_TYPE_ARGS);
+    printf("Line %d: Error %d (ERR_WRONG_TYPE_ARGS) - Argument %d of function '%s' declared at line %d: expected '%s' but got '%s'.\n",
+           call_line, ERR_WRONG_TYPE_ARGS, param_index, func_name, decl_line,
+           type_to_string(expected_type), type_to_string(provided_type));
 }
 
 const char* type_to_string(int type)

@@ -11,10 +11,72 @@ type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* tr
     return tree_left->data_type;
 }
 
+type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* call_id,
+                                asd_tree_t* call_args)
+{
+    symbol_t* function_symbol = scope_get_symbol(scope_stack, call_id->value, call_id->line);
+
+    if (function_symbol->kind != FUNCTION) {
+        display_variable_error(call_id->value, call_id->line, function_symbol->lex_value->line);
+        CLEAN_EXIT(scope_stack, ERR_VARIABLE);
+    }
+
+    // Compute how many arguments were used on the function call
+    asd_tree_t* arg = call_args;
+    int num_used_args = 0;
+    while (arg != NULL) {
+        num_used_args++;
+        if (arg->number_of_children > 0) {
+            arg = arg->children[arg->number_of_children - 1];
+        } else {
+            break;
+        }
+    }
+
+    int num_expected_args = 0;
+    if (function_symbol->params != NULL) {
+        num_expected_args = function_symbol->params->num_parameters;
+    }
+
+    if (num_expected_args > num_used_args) {
+        display_missing_args_error(call_id->line, function_symbol->lex_value->line, call_id->value,
+                                   num_expected_args, num_used_args);
+        CLEAN_EXIT(scope_stack, ERR_MISSING_ARGS);
+    }
+
+    if (num_expected_args < num_used_args) {
+        display_excess_args_error(call_id->line, function_symbol->lex_value->line, call_id->value,
+                                  num_expected_args, num_used_args);
+        CLEAN_EXIT(scope_stack, ERR_EXCESS_ARGS);
+    }
+
+    int i;
+    arg = call_args;
+    // Validate each argument type
+    for (i = 0; i < num_expected_args; i++) {
+        type_t expected_type = function_symbol->params->parameters[i]->type;
+        type_t provided_type = arg->data_type;
+        if (expected_type != provided_type) {
+            display_wrong_type_args_error(call_id->line, function_symbol->lex_value->line,
+                                          call_id->value, i + 1, expected_type, provided_type);
+            CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE_ARGS);
+        }
+
+        if (arg->number_of_children > 0) {
+            arg = arg->children[arg->number_of_children - 1];
+        } else {
+            arg = NULL;
+        }
+    }
+
+    // All good
+    return function_symbol->type;
+}
+
 type_t infer_return_type(scope_stack_t* scope_stack, asd_tree_t* return_expr, type_t declared_type)
 {
     if (return_expr->data_type != declared_type) {
-        display_assignment_type_error(return_expr->lexical_payload->line, return_expr->label,
+        display_atribution_type_error(return_expr->lexical_payload->line, return_expr->label,
                                       declared_type, return_expr->data_type);
         CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
     }
