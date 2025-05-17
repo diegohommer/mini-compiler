@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payload)
+asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payload, int num_children, ...)
 {
     asd_tree_t *ret = NULL;
     ret = calloc(1, sizeof(asd_tree_t));
@@ -13,6 +13,7 @@ asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payloa
         ret->data_type = (int)data_type;
         ret->number_of_children = 0;
         ret->children = NULL;
+
         if (payload != NULL) {
             lexical_value_t *local_copy = malloc(sizeof(lexical_value_t));
             local_copy->value = strdup(payload->value);
@@ -21,6 +22,18 @@ asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payloa
         } else {
             ret->lexical_payload = NULL;
         }
+
+        va_list args;
+        va_start(args, num_children);
+
+        for (int i = 0; i < num_children; ++i) {
+            asd_tree_t* child = va_arg(args, asd_tree_t*);
+            if (child != NULL) {
+                asd_add_child(ret, child);
+            }
+        }
+
+        va_end(args);
     }
     return ret;
 }

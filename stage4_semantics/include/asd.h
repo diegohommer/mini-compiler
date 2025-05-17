@@ -1,8 +1,11 @@
 #ifndef _ASD_H_
 #define _ASD_H_
 
+#include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * @enum type_t
@@ -39,16 +42,20 @@ typedef struct asd_tree {
 } asd_tree_t;
 
 /**
- * @brief Creates a new AST node with no children.
+ * @brief Creates a new AST node with the specified children.
  *
  * Copies the label and lexical payload (if provided).
+ * Accepts a variable number of child nodes.
  *
  * @param label Node label.
  * @param data_type Data type of the node.
  * @param payload Optional lexical payload (may be NULL).
- * @return Pointer to the newly allocated AST node.
+ * @param num_children Number of child nodes.
+ * @param ... Variable number of pointers to child nodes (asd_tree_t*).
+ * @return Pointer to the newly allocated AST node, or NULL on allocation failure.
  */
-asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payload);
+asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payload, int num_children,
+                    ...);
 
 /**
  * @brief Frees an AST node and all its descendants.

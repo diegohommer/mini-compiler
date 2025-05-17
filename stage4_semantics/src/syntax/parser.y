@@ -2,14 +2,11 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
-  #include <stdarg.h>
-  #include <stddef.h>
 
   #include "type_infer.h"
 
   int yylex(void);
   void yyerror (char const *mensagem);
-  asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int num_children, ...);
   asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op, asd_tree_t* right);
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
   type_t get_token_type(lexical_value_t* lexical_value);
@@ -94,7 +91,7 @@ def_func: func_header create_scope func_params TK_PR_IS func_body destroy_scope 
 
 // FUNCTION HEADER - Defines the function name and return type.
 func_header: TK_ID TK_PR_RETURNS type { 
-  $$ = asd_new($1->value, $3, $1);
+  $$ = asd_new($1->value, $3, $1, 0);
   scope_declare_symbol(scope_stack, symbol_new(FUNCTION, $3, $1));
   free_lex_value($1);
 };
@@ -154,7 +151,7 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type {
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
   type_t var_type = infer_initialization_type(scope_stack, $2, $4, $6->data_type);
-  $$ = make_tree("with", var_type, $2, 2, asd_new($2->value, var_type, $2), $6);
+  $$ = asd_new("with", var_type, $2, 2, asd_new($2->value, var_type, $2, 0), $6);
   scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, var_type, $2));
   free_lex_value($2);
 }
@@ -163,7 +160,7 @@ var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
 // ATRIBUTION - Defines an atribution
 atribution: TK_ID TK_PR_IS exp {
   type_t var_type = infer_atribution_type(scope_stack, $1, $3->data_type);
-  $$ = make_tree("is", var_type, $1, 2, asd_new($1->value, var_type,$1), $3);
+  $$ = asd_new("is", var_type, $1, 2, asd_new($1->value, var_type, $1, 0), $3);
   free_lex_value($1);
 };
 
@@ -175,7 +172,7 @@ func_call: TK_ID call_args {
   snprintf(buffer, len, "call %s", $1->value);
 
   int call_type = infer_function_call_type(scope_stack, $1, $2);
-  $$ = make_tree(buffer, call_type, $1, 1, $2);
+  $$ = asd_new(buffer, call_type, $1, 1, $2);
 
   free_lex_value($1);
   free(buffer);
@@ -192,14 +189,14 @@ call_args_list: exp { $$ = $1; }
 // RETURN COMMAND - Defines return statement with an expression and its type.
 return_cmd: TK_PR_RETURN exp TK_PR_AS type {
   int return_type = infer_return_type(scope_stack, $2, $4);
-  $$ = make_tree("return", return_type, $2->lexical_payload, 1, $2);
+  $$ = asd_new("return", return_type, $2->lexical_payload, 1, $2);
 };
 
 
 // CONDITIONAL - Defines an if-else structure (optional else)
 if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
   int if_type = infer_if_type(scope_stack, $3->data_type, $5, $6);
-  $$ = make_tree("if", if_type, $3->lexical_payload, 3, $3, $5, $6);
+  $$ = asd_new("if", if_type, $3->lexical_payload, 3, $3, $5, $6);
 }; 
 
 else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
@@ -208,7 +205,7 @@ else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
 
 // REPETITION - Defines a while-loop structure
 while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
-  $$ = make_tree("while", $3->data_type, $3->lexical_payload, 2, $3, $5);
+  $$ = asd_new("while", $3->data_type, $3->lexical_payload, 2, $3, $5);
 }
 
 
@@ -260,12 +257,12 @@ n2: n2 prec2_ops n1 { $$ = make_exp_tree($1, $2, $3); }
 prec1_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; } 
          | '!' { $$ = "!"; };
-n1: prec1_ops n1 { $$ = make_tree($1, $2->data_type, $2->lexical_payload, 1, $2); }
+n1: prec1_ops n1 { $$ = asd_new($1, $2->data_type, $2->lexical_payload, 1, $2); }
   | n0 { $$ = $1; };
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
 prec0_ops: func_call { $$ = $1; } 
-         | TK_ID { $$ = asd_new($1->value, get_token_type($1), $1); free_lex_value($1); } 
+         | TK_ID { $$ = asd_new($1->value, get_token_type($1), $1, 0); free_lex_value($1); } 
          | literal { $$ = $1; }
          | '(' exp ')'{ $$ = $2; };
 n0: prec0_ops { $$ = $1; };
@@ -273,8 +270,8 @@ n0: prec0_ops { $$ = $1; };
 // TYPE AND LITERAL TOKENS
 type: TK_PR_INT { $$ = INT; }
     | TK_PR_FLOAT { $$ = FLOAT; };
-literal: TK_LI_INT { $$ = asd_new($1->value, INT, $1); free_lex_value($1); }
-       | TK_LI_FLOAT { $$ = asd_new($1->value, FLOAT, $1); free_lex_value($1); };
+literal: TK_LI_INT { $$ = asd_new($1->value, INT, $1, 0); free_lex_value($1); }
+       | TK_LI_FLOAT { $$ = asd_new($1->value, FLOAT, $1, 0); free_lex_value($1); };
 
 
 
@@ -291,27 +288,10 @@ void yyerror(const char *message){
   fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
 }
 
-asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int num_children, ...) {
-  asd_tree_t* parent = asd_new(label, type, val);
-
-	va_list args;
-	va_start(args, num_children);
-
-	for (int i = 0; i < num_children; ++i) {
-		asd_tree_t* child = va_arg(args, asd_tree_t*);
-		if (child != NULL) {
-			asd_add_child(parent, child);
-		}
-	}
-
-	va_end(args);
-	return parent;
-}
-
 asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op, asd_tree_t* right)
 {
   type_t exp_type = infer_exp_type(scope_stack, op, left, right);
-  return make_tree(op, exp_type, left->lexical_payload, 2, left, right);
+  return asd_new(op, exp_type, left->lexical_payload, 2, left, right);
 }
 
 asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail) {
