@@ -12,6 +12,7 @@
   asd_tree_t* make_tree(const char* label, type_t type, lexical_value_t* val, int num_children, ...);
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
   type_t get_token_type(lexical_value_t* lexical_value);
+  void check_if_else_type(asd_tree_t* if_block, asd_tree_t* else_block);
   type_t infer_exp_type(const char* op, asd_tree_t* exp_left, asd_tree_t* exp_right);
   void free_lex_value(lexical_value_t* lexical_value);
 
@@ -194,7 +195,8 @@ return_cmd: TK_PR_RETURN exp TK_PR_AS type {
 
 // CONDITIONAL - Defines an if-else structure (optional else)
 if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
-  $$ = make_tree("if", NULL, 3, $3, $5, $6);
+  if ($6 != NULL) check_if_else_type($5, $6);
+  $$ = make_tree("if", $3->data_type, NULL, 3, $3, $5, $6);
 };
 
 else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
@@ -203,7 +205,7 @@ else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
 
 // REPETITION - Defines a while-loop structure
 while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
-  $$ = make_tree("while", NULL, 2, $3, $5);
+  $$ = make_tree("while", $3->data_type, NULL, 2, $3, $5);
 }
 
 
@@ -317,13 +319,21 @@ type_t get_token_type(lexical_value_t* lexical_value){
   return decl_symbol->type;
 }
 
-type_t infer_exp_type(const char* op, asd_tree_t* tree_left, asd_tree_t* tree_right) {
-    if (tree_left->data_type != tree_right->data_type) {
-      display_expression_type_error(tree_left->lexical_payload->line, op, 
-                                    tree_left->data_type, tree_right->data_type);
-      CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
-    }
-    return tree_left->data_type;
+void check_if_else_type(asd_tree_t* if_block, asd_tree_t* else_block){
+  if (if_block->data_type != else_block->data_type){
+    display_if_else_type_error(if_block->lexical_payload->line, else_block->lexical_payload->line,
+                               if_block->data_type, else_block->data_type);
+    CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
+  }
+}
+
+type_t infer_exp_type(const char* op, asd_tree_t* tree_left, asd_tree_t* tree_right){
+  if (tree_left->data_type != tree_right->data_type){
+    display_expression_type_error(tree_left->lexical_payload->line, op, 
+                                  tree_left->data_type, tree_right->data_type);
+    CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
+  }
+  return tree_left->data_type;
 }
 
 void free_lex_value(lexical_value_t* lexical_value){

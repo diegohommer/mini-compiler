@@ -36,6 +36,14 @@ void display_expression_type_error(int line, const char* op, int type1, int type
            line, ERR_WRONG_TYPE, op, type_to_string(type1), type_to_string(type2));
 }
 
+void display_if_else_type_error(int line, int type_if, int type_else)
+{
+    printf(
+        "Line %d: Error %d (TYPE_MISMATCH_ERROR) - Mismatched types between 'if' and 'else' "
+        "blocks: '%s' vs '%s'.\n",
+        line, ERR_WRONG_TYPE, type_to_string(type_if), type_to_string(type_else));
+}
+
 void display_missing_args_error(int line)
 {
     printf("Line %d: Error %d - Missing function arguments.\n", line, ERR_MISSING_ARGS);
