@@ -88,8 +88,7 @@ void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
 
     const char* label = used_symbol->lex_value->value;
     int line = used_symbol->lex_value->line;
-    symbol_t* declared_symbol =
-        scope_get_symbol(stack, used_symbol->lex_value->value, used_symbol->lex_value->line);
+    symbol_t* declared_symbol = scope_get_symbol(stack, label, line);
 
     // Found: check for mismatching types and kinds
     if (used_symbol->type != declared_symbol->type) {
@@ -98,12 +97,12 @@ void scope_validate_symbol_usage(scope_stack_t* stack, symbol_t* used_symbol)
         CLEAN_EXIT(stack, ERR_WRONG_TYPE);
     }
     if (used_symbol->kind == FUNCTION && declared_symbol->kind == IDENTIFIER) {
-        display_variable_error(label, line);
+        display_variable_error(label, line, declared_symbol->lex_value->line);
         symbol_free(used_symbol);
         CLEAN_EXIT(stack, ERR_VARIABLE);
     }
     if (used_symbol->kind == IDENTIFIER && declared_symbol->kind == FUNCTION) {
-        display_function_error(label, line);
+        display_function_error(label, line, declared_symbol->lex_value->line);
         symbol_free(used_symbol);
         CLEAN_EXIT(stack, ERR_FUNCTION);
     }

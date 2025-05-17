@@ -14,8 +14,8 @@
 // Error display functions
 void display_undeclared_error(const char* label, int line_number);
 void display_declared_error(const char* label, int used_line_number, int declared_line_number);
-void display_variable_error(const char* label, int line_number);
-void display_function_error(const char* label, int line_number);
+void display_variable_error(const char* label, int used_line_number, int declared_line_number);
+void display_function_error(const char* label, int used_line_number, int declared_line_number);
 void display_wrong_type_error(int line_number);
 void display_missing_args_error(int line_number);
 void display_excess_args_error(int line_number);

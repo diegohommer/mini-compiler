@@ -4,7 +4,7 @@
 
 void display_undeclared_error(const char* label, int line)
 {
-    printf("Line %d: Error %d - Identifier %s not declared.\n", line, ERR_UNDECLARED, label);
+    printf("Line %d: Error %d - Identifier %s was not declared.\n", line, ERR_UNDECLARED, label);
 }
 
 void display_declared_error(const char* label, int line, int decl_line)
@@ -13,14 +13,20 @@ void display_declared_error(const char* label, int line, int decl_line)
            label, decl_line);
 }
 
-void display_variable_error(const char* label, int line)
+void display_variable_error(const char* label, int line, int decl_line)
 {
-    printf("Line %d: Error %d - Identifier %s is not a variable.\n", line, ERR_VARIABLE, label);
+    printf(
+        "Line %d: Error %d - Identifier '%s' is used as a function but was declared as a "
+        "variable at line %d.\n",
+        line, ERR_VARIABLE, label, decl_line);
 }
 
-void display_function_error(const char* label, int line)
+void display_function_error(const char* label, int line, int decl_line)
 {
-    printf("Line %d: Error %d - Identifier %s is not a function.\n", line, ERR_FUNCTION, label);
+    printf(
+        "Line %d: Error %d - Identifier '%s' is used as a variable but was declared as a "
+        "function at line %d.\n",
+        line, ERR_VARIABLE, label, decl_line);
 }
 
 void display_wrong_type_error(int line)
