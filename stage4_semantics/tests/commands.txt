@@ -18,10 +18,10 @@ main returns float is [
                 return z as float
             ]
         ]
-        while (((x) / (y)) > 0)[
+        while (((x) / (y)) > .0)[
             x is (x - 1.0)
         ]
     ]
     [[[]]]
-    return sub_floats(y,x) as float
+    return sub_floats(x,x) as float
 ];
