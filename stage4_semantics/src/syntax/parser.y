@@ -93,7 +93,7 @@ def_func: func_header create_scope func_params TK_PR_IS func_body destroy_scope 
 
 // FUNCTION HEADER - Defines the function name and return type.
 func_header: TK_ID TK_PR_RETURNS type { 
-  $$ = asd_new($1->value, $1);
+  $$ = asd_new($1->value, $3, $1);
   scope_declare_symbol(scope_stack, symbol_new(FUNCTION, $3, $1));
   free_lex_value($1);
 };
@@ -152,17 +152,17 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type {
 
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
-  asd_tree_t* id_tree = asd_new($2->value, $4, $2);
-  type_t = infer_exp_type(id_tree, $6);
-  $$ = make_tree("with", infer_exp_type(id_tree, $6), NULL, 2, id_tree, $6);
-  scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, $4, $2));
+  type_t var_type = infer_initialization_type(scope_stack, $2, $4, $6);
+  $$ = make_tree("with", var_type, NULL, 2, id_tree, $6);
+  scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, var_type, $2));
   free_lex_value($2);
 }
 
 
 // ATRIBUTION - Defines an atribution
 atribution: TK_ID TK_PR_IS exp {
-  $$ = make_tree("is", NULL, 2, asd_new($1->value, $1), $3);
+  type_t var_type = infer_atribution_type(scope_stack, $1, $3->data_type);
+  $$ = make_tree("is", var_type, NULL, 2, asd_new($1->value, var_type,$1), $3);
   free_lex_value($1);
 };
 

@@ -4,20 +4,38 @@
 #include "scope_stack.h"
 
 /**
- * @brief Infers and validates the resulting type of a binary expression.
+ * @brief Infers and validates the type of a variable initialization.
  *
- * Compares the data types of the left and right expression trees.
+ * Validates whether the declared type of a variable matches the type of the expression
+ * used during its initialization.
  *
- * @param scope_stack Pointer to the scope stack.
- * @param op          The operator being applied (e.g., "+", "==", "|").
- * @param exp_left    Pointer to the left operand's AST node.
- * @param exp_right   Pointer to the right operand's AST node.
- * @return The common data type if both operands have the same type.
+ * @param scope_stack Pointer to the current scope stack.
+ * @param var_id      Lexical value of the declared variable.
+ * @param decl_type   The declared type of the variable.
+ * @param exp_type    The type of the initializer expression.
+ * @return The declared type if it matches the initializer expression type.
  *
- * @note Exits with ERR_WRONG_TYPE if the types do not match.
+ * @note Exits with ERR_WRONG_TYPE if the initializer type does not match the declared type.
  */
-type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* exp_left,
-                      asd_tree_t* exp_right);
+type_t infer_initialization_type(scope_stack_t* scope_stack, lexical_value_t* var_id,
+                                 type_t decl_type, type_t exp_type);
+
+/**
+ * @brief Infers and validates the type of a variable assignment.
+ *
+ * Checks that the identifier refers to a declared variable (not a function),
+ * and that the type of the expression assigned matches the declared type of the variable.
+ *
+ * @param scope_stack Pointer to the scope stack for symbol lookup.
+ * @param var_id      Lexical value of the variable receiving the assignment.
+ * @param exp_type    Type of the expression being assigned to the variable.
+ * @return The expression type if the assignment is valid.
+ *
+ * @note Exits with ERR_UNDECLARED if the variable is not declared.
+ * @note Exits with ERR_FUNCTION if the identifier refers to a function.
+ * @note Exits with ERR_WRONG_TYPE if the assigned type does not match the declared type.
+ */
+type_t infer_atribution_type(scope_stack_t* scope_stack, lexical_value_t* var_id, type_t exp_type);
 
 /**
  * @brief Infers and validates the return type of a function call expression.
@@ -26,17 +44,19 @@ type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* ex
  * of arguments against the function's parameter list as registered in the symbol table.
  *
  * @param scope_stack Pointer to the scope stack.
- * @param func_name   Name of the function being called.
+ * @param call_id     Lexical value of the function being called.
  * @param call_args   AST node representing the list of arguments in the function call.
  * @return The return type of the function if the call is valid.
  *
  * @note Exits with ERR_UNDECLARED if the function is not declared.
- * @note Exits with ERR_VARIABLE if the identifier used is that of a variable.
+ * @note Exits with ERR_VARIABLE if the identifier regers to a variable.
  * @note Exits with ERR_MISSING_ARGS if too few arguments are provided.
  * @note Exits with ERR_EXCESS_ARGS if too many arguments are provided.
- * @note Exits with ERR_WRONG_TYPE_ARGS if any argument type does not match the expected parameter type.
+ * @note Exits with ERR_WRONG_TYPE_ARGS if any argument type does not match the expected parameter
+ * type.
  */
-type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* call_id, asd_tree_t* call_args);
+type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* call_id,
+                                asd_tree_t* call_args);
 
 /**
  * @brief Infers and validates the return expression type considering user declaration and function
@@ -67,5 +87,21 @@ type_t infer_return_type(scope_stack_t* scope_stack, asd_tree_t* return_expr, ty
  */
 type_t infer_if_type(scope_stack_t* scope_stack, type_t cond_type, asd_tree_t* if_block,
                      asd_tree_t* else_block);
+
+/**
+ * @brief Infers and validates the resulting type of a binary expression.
+ *
+ * Compares the data types of the left and right expression trees.
+ *
+ * @param scope_stack Pointer to the scope stack.
+ * @param op          The operator being applied (e.g., "+", "==", "|").
+ * @param exp_left    Pointer to the left operand's AST node.
+ * @param exp_right   Pointer to the right operand's AST node.
+ * @return The common data type if both operands have the same type.
+ *
+ * @note Exits with ERR_WRONG_TYPE if the types do not match.
+ */
+type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* exp_left,
+                      asd_tree_t* exp_right);
 
 #endif  // TYPE_INFER_H

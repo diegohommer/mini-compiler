@@ -1,14 +1,30 @@
 #include "type_infer.h"
 
-type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* tree_left,
-                      asd_tree_t* tree_right)
+type_t infer_initialization_type(scope_stack_t* scope_stack, lexical_value_t* var_id,
+                                 type_t decl_type, type_t exp_type)
 {
-    if (tree_left->data_type != tree_right->data_type) {
-        display_expression_type_error(tree_left->lexical_payload->line, op, tree_left->data_type,
-                                      tree_right->data_type);
+    if (decl_type != exp_type) {
+        display_initialization_type_error(var_id->line, var_id->value, decl_type, exp_type);
         CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
     }
-    return tree_left->data_type;
+
+    return decl_type;
+}
+
+type_t infer_atribution_type(scope_stack_t* scope_stack, lexical_value_t* var_id, type_t exp_type)
+{
+    symbol_t* var_decl = scope_get_symbol(scope_stack, var_id->value, var_id->line);
+    if (var_decl->kind != IDENTIFIER) {
+        display_function_error(var_id->value, var_id->line, var_decl->lex_value->line);
+        CLEAN_EXIT(scope_stack, ERR_FUNCTION);
+    }
+
+    if (var_decl->type != exp_type) {
+        display_atribution_type_error(var_id->line, var_decl->lex_value->line, var_id->value, var_decl->type, exp_type);
+        CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
+    }
+
+    return exp_type;
 }
 
 type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* call_id,
@@ -69,7 +85,6 @@ type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* cal
         }
     }
 
-    // All good
     return function_symbol->type;
 }
 
@@ -102,5 +117,18 @@ type_t infer_if_type(scope_stack_t* scope_stack, type_t cond_type, asd_tree_t* i
             CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
         }
     }
+
     return cond_type;
+}
+
+type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* tree_left,
+                      asd_tree_t* tree_right)
+{
+    if (tree_left->data_type != tree_right->data_type) {
+        display_expression_type_error(tree_left->lexical_payload->line, op, tree_left->data_type,
+                                      tree_right->data_type);
+        CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
+    }
+
+    return tree_left->data_type;
 }

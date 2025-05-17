@@ -30,18 +30,34 @@ void display_function_error(const char* label, int line, int decl_line)
         line, ERR_FUNCTION, label, decl_line);
 }
 
-void display_expression_type_error(int line, const char* op, int type1, int type2)
+void display_initialization_type_error(int init_line, const char* var_name, int declared_type,
+                                       int initializer_type)
 {
-    printf("Line %d: Error %d (TYPE_MISMATCH_ERROR)- Cannot apply '%s' between '%s' and '%s'.\n",
-           line, ERR_WRONG_TYPE, op, type_to_string(type1), type_to_string(type2));
+    printf(
+        "Line %d: Error %d (TYPE_MISMATCH_ERROR) - Cannot initialize variable '%s' of type '%s' "
+        "with value of type '%s'.\n",
+        init_line, ERR_WRONG_TYPE, var_name, type_to_string(declared_type),
+        type_to_string(initializer_type));
 }
 
-void display_return_type_error(int return_line, int func_line, const char* func_name,
-                               int type_decl, int type_used)
+void display_atribution_type_error(int assign_line, int decl_line, const char* var_name,
+                                   int declared_type, int assigned_type)
 {
-    printf("Line %d: Error %d (TYPE_MISMATCH_ERROR) - Return type in function '%s' declared at line %d is '%s', but got '%s'.\n",
-           return_line, ERR_WRONG_TYPE, func_name, func_line,
-           type_to_string(type_decl), type_to_string(type_used));
+    printf(
+        "Line %d: Error %d (TYPE_MISMATCH_ERROR) - Cannot assign type '%s' to variable '%s' "
+        "(declared at line %d as '%s').\n",
+        assign_line, ERR_WRONG_TYPE, type_to_string(assigned_type), var_name, decl_line,
+        type_to_string(declared_type));
+}
+
+void display_return_type_error(int return_line, int func_line, const char* func_name, int type_decl,
+                               int type_used)
+{
+    printf(
+        "Line %d: Error %d (TYPE_MISMATCH_ERROR) - Return type in function '%s' declared at line "
+        "%d is '%s', but got '%s'.\n",
+        return_line, ERR_WRONG_TYPE, func_name, func_line, type_to_string(type_decl),
+        type_to_string(type_used));
 }
 
 void display_if_else_type_error(int line, int type_if, int type_else)
@@ -52,24 +68,38 @@ void display_if_else_type_error(int line, int type_if, int type_else)
         line, ERR_WRONG_TYPE, type_to_string(type_if), type_to_string(type_else));
 }
 
-void display_missing_args_error(int call_line, int decl_line, const char* func_name, int expected, int got)
+void display_expression_type_error(int line, const char* op, int type1, int type2)
 {
-    printf("Line %d: Error %d (ERR_MISSING_ARGS) - Too few arguments to function '%s' declared at line %d; expected %d but got %d.\n",
-           call_line, ERR_MISSING_ARGS, func_name, decl_line, expected, got);
+    printf("Line %d: Error %d (TYPE_MISMATCH_ERROR)- Cannot apply '%s' between '%s' and '%s'.\n",
+           line, ERR_WRONG_TYPE, op, type_to_string(type1), type_to_string(type2));
 }
 
-void display_excess_args_error(int call_line, int decl_line, const char* func_name, int expected, int got)
+void display_missing_args_error(int call_line, int decl_line, const char* func_name, int expected,
+                                int got)
 {
-    printf("Line %d: Error %d (ERR_EXCESS_ARGS) - Too many arguments to function '%s' declared at line %d; expected %d but got %d.\n",
-           call_line, ERR_EXCESS_ARGS, func_name, decl_line, expected, got);
+    printf(
+        "Line %d: Error %d (ERR_MISSING_ARGS) - Too few arguments to function '%s' declared at "
+        "line %d; expected %d but got %d.\n",
+        call_line, ERR_MISSING_ARGS, func_name, decl_line, expected, got);
 }
 
-void display_wrong_type_args_error(int call_line, int decl_line, const char* func_name, int param_index,
-                                   int expected_type, int provided_type)
+void display_excess_args_error(int call_line, int decl_line, const char* func_name, int expected,
+                               int got)
 {
-    printf("Line %d: Error %d (ERR_WRONG_TYPE_ARGS) - Argument %d of function '%s' declared at line %d: expected '%s' but got '%s'.\n",
-           call_line, ERR_WRONG_TYPE_ARGS, param_index, func_name, decl_line,
-           type_to_string(expected_type), type_to_string(provided_type));
+    printf(
+        "Line %d: Error %d (ERR_EXCESS_ARGS) - Too many arguments to function '%s' declared at "
+        "line %d; expected %d but got %d.\n",
+        call_line, ERR_EXCESS_ARGS, func_name, decl_line, expected, got);
+}
+
+void display_wrong_type_args_error(int call_line, int decl_line, const char* func_name,
+                                   int param_index, int expected_type, int provided_type)
+{
+    printf(
+        "Line %d: Error %d (ERR_WRONG_TYPE_ARGS) - Argument %d of function '%s' declared at line "
+        "%d: expected '%s' but got '%s'.\n",
+        call_line, ERR_WRONG_TYPE_ARGS, param_index, func_name, decl_line,
+        type_to_string(expected_type), type_to_string(provided_type));
 }
 
 const char* type_to_string(int type)
