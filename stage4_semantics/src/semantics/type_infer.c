@@ -127,7 +127,7 @@ type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* tr
                       asd_tree_t* tree_right)
 {
     if (tree_left->data_type != tree_right->data_type) {
-        display_expression_type_error(tree_left->lexical_payload->line, op, tree_left->data_type,
+        display_expression_type_error(tree_right->lexical_payload->line, op, tree_left->data_type,
                                       tree_right->data_type);
         CLEAN_EXIT(scope_stack, ERR_WRONG_TYPE);
     }

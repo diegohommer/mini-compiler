@@ -153,7 +153,7 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type {
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
   type_t var_type = infer_initialization_type(scope_stack, $2, $4, $6->data_type);
-  $$ = make_tree("with", var_type, NULL, 2, asd_new($2->value, var_type, $2), $6);
+  $$ = make_tree("with", var_type, $2, 2, asd_new($2->value, var_type, $2), $6);
   scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, var_type, $2));
   free_lex_value($2);
 }
@@ -162,7 +162,7 @@ var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
 // ATRIBUTION - Defines an atribution
 atribution: TK_ID TK_PR_IS exp {
   type_t var_type = infer_atribution_type(scope_stack, $1, $3->data_type);
-  $$ = make_tree("is", var_type, NULL, 2, asd_new($1->value, var_type,$1), $3);
+  $$ = make_tree("is", var_type, $1, 2, asd_new($1->value, var_type,$1), $3);
   free_lex_value($1);
 };
 
@@ -191,14 +191,14 @@ call_args_list: exp { $$ = $1; }
 // RETURN COMMAND - Defines return statement with an expression and its type.
 return_cmd: TK_PR_RETURN exp TK_PR_AS type {
   int return_type = infer_return_type(scope_stack, $2, $4);
-  $$ = make_tree("return", return_type, NULL, 1, $2);
+  $$ = make_tree("return", return_type, $2->lexical_payload, 1, $2);
 };
 
 
 // CONDITIONAL - Defines an if-else structure (optional else)
 if_else_cmd: TK_PR_IF '(' exp ')' cmd_block else_cmd {
   int if_type = infer_if_type(scope_stack, $3->data_type, $5, $6);
-  $$ = make_tree("if", if_type, NULL, 3, $3, $5, $6);
+  $$ = make_tree("if", if_type, $3->lexical_payload, 3, $3, $5, $6);
 }; 
 
 else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
@@ -207,7 +207,7 @@ else_cmd: TK_PR_ELSE cmd_block { $$ = $2; }
 
 // REPETITION - Defines a while-loop structure
 while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
-  $$ = make_tree("while", $3->data_type, NULL, 2, $3, $5);
+  $$ = make_tree("while", $3->data_type, $3->lexical_payload, 2, $3, $5);
 }
 
 
@@ -220,17 +220,17 @@ while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
 exp: n7 { $$ = $1; };
 
 // PRECEDENCE 7 (LOWEST) - Bitwise OR
-n7: n7 '|' n6 { $$ = make_tree("|", infer_exp_type(scope_stack, "|", $1, $3), NULL, 2, $1, $3);}
+n7: n7 '|' n6 { $$ = make_tree("|", infer_exp_type(scope_stack, "|", $1, $3), $1->lexical_payload , 2, $1, $3);}
   | n6 { $$ = $1; };
 
 // PRECEDENCE 6 - Bitwise AND
-n6: n6 '&' n5 { $$ = make_tree("&", infer_exp_type(scope_stack, "&", $1, $3), NULL, 2, $1, $3);}
+n6: n6 '&' n5 { $$ = make_tree("&", infer_exp_type(scope_stack, "&", $1, $3), $1->lexical_payload, 2, $1, $3);}
   | n5 { $$ = $1; };
 
 // PRECEDENCE 5 - Comparison (==, !=)
 prec5_ops: TK_OC_EQ { $$ = "=="; } 
          | TK_OC_NE { $$ = "!="; };
-n5: n5 prec5_ops n4 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), NULL, 2, $1, $3);}
+n5: n5 prec5_ops n4 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), $1->lexical_payload, 2, $1, $3);}
   | n4 { $$ = $1; };
 
 // PRECEDENCE 4 - Comparison (<, >, <=, >=)
@@ -238,28 +238,28 @@ prec4_ops: '<' { $$ = "<"; }
          | '>' { $$ = ">"; } 
          | TK_OC_LE { $$ = "<="; } 
          | TK_OC_GE { $$ = ">="; };
-n4: n4 prec4_ops n3 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), NULL, 2, $1, $3); }
-  | n3 { $$ = $1; };   
+n4: n4 prec4_ops n3 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), $1->lexical_payload, 2, $1, $3); }
+  | n3 { $$ = $1; };
 
 
 // PRECEDENCE 3 - Addition & Subtraction (+, -)
 prec3_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; };
-n3: n3 prec3_ops n2 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), NULL, 2, $1, $3); }
+n3: n3 prec3_ops n2 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), $1->lexical_payload, 2, $1, $3); }
   | n2 { $$ = $1; };
 
 // PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %)
 prec2_ops: '*' { $$ = "*"; } 
          | '/' { $$ = "/"; } 
          | '%' { $$ = "%"; };
-n2: n2 prec2_ops n1 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), NULL, 2, $1, $3); }
+n2: n2 prec2_ops n1 { $$ = make_tree($2, infer_exp_type(scope_stack, $2, $1, $3), $1->lexical_payload, 2, $1, $3); }
   | n1 { $$ = $1; };
 
 // PRECEDENCE 1 - Unary Operators (+, -, !)
 prec1_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; } 
          | '!' { $$ = "!"; };
-n1: prec1_ops n1 { $$ = make_tree($1, $2->data_type, NULL, 1, $2); }
+n1: prec1_ops n1 { $$ = make_tree($1, $2->data_type, $2->lexical_payload, 1, $2); }
   | n0 { $$ = $1; };
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
