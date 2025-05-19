@@ -1,3 +1,8 @@
+/*
+ * Developed by: Diego Hommerding Amorim - 00341793
+ *           Gabriel Kenji Yatsuda Ikuta - 00337491
+ */
+
 #ifndef _ASD_H_
 #define _ASD_H_
 

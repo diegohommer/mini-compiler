@@ -1,3 +1,8 @@
+/*
+ * Developed by: Diego Hommerding Amorim - 00341793
+ *           Gabriel Kenji Yatsuda Ikuta - 00337491
+ */
+
 #ifndef TYPE_INFER_H
 #define TYPE_INFER_H
 

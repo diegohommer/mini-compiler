@@ -1,4 +1,8 @@
 %{
+    /*
+     * Developed by: Diego Hommerding Amorim - 00341793
+     *           Gabriel Kenji Yatsuda Ikuta - 00337491
+     */
     #include "stdio.h"
     #include "asd.h"
     #include "parser.tab.h"

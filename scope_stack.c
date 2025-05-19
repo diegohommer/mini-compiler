@@ -1,3 +1,8 @@
+/*
+ * Developed by: Diego Hommerding Amorim - 00341793
+ *           Gabriel Kenji Yatsuda Ikuta - 00337491
+ */
+
 #include "scope_stack.h"
 
 scope_stack_t* scope_stack_new(void)

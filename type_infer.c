@@ -1,3 +1,8 @@
+/*
+ * Developed by: Diego Hommerding Amorim - 00341793
+ *           Gabriel Kenji Yatsuda Ikuta - 00337491
+ */
+
 #include "type_infer.h"
 
 type_t infer_initialization_type(scope_stack_t* scope_stack, lexical_value_t* var_id,

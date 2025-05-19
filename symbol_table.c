@@ -1,3 +1,8 @@
+/*
+ * Developed by: Diego Hommerding Amorim - 00341793
+ *           Gabriel Kenji Yatsuda Ikuta - 00337491
+ */
+
 #include "symbol_table.h"
 
 symbol_table_t* table_new(void)
