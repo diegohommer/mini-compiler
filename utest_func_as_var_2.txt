@@ -1,0 +1,7 @@
+func returns int is [
+    return 1 as int
+],
+
+main returns int is [
+    return 1 + func as int
+];

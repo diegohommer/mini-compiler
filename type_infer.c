@@ -34,7 +34,7 @@ type_t infer_atribution_type(scope_stack_t* scope_stack, lexical_value_t* var_id
 }
 
 type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* call_id,
-                                asd_tree_t* call_args)
+                                asd_tree_t* call_args, int num_args)
 {
     symbol_t* function_symbol = scope_get_symbol(scope_stack, call_id->value, call_id->line);
 
@@ -43,37 +43,25 @@ type_t infer_function_call_type(scope_stack_t* scope_stack, lexical_value_t* cal
         CLEAN_EXIT(scope_stack, ERR_VARIABLE);
     }
 
-    // Compute how many arguments were used on the function call
-    asd_tree_t* arg = call_args;
-    int num_used_args = 0;
-    while (arg != NULL) {
-        num_used_args++;
-        if (arg->number_of_children > 0) {
-            arg = arg->children[arg->number_of_children - 1];
-        } else {
-            break;
-        }
-    }
-
     int num_expected_args = 0;
     if (function_symbol->params != NULL) {
         num_expected_args = function_symbol->params->num_parameters;
     }
 
-    if (num_expected_args > num_used_args) {
+    if (num_expected_args > num_args) {
         display_missing_args_error(call_id->line, function_symbol->lex_value->line, call_id->value,
-                                   num_expected_args, num_used_args);
+                                   num_expected_args, num_args);
         CLEAN_EXIT(scope_stack, ERR_MISSING_ARGS);
     }
 
-    if (num_expected_args < num_used_args) {
+    if (num_expected_args < num_args) {
         display_excess_args_error(call_id->line, function_symbol->lex_value->line, call_id->value,
-                                  num_expected_args, num_used_args);
+                                  num_expected_args, num_args);
         CLEAN_EXIT(scope_stack, ERR_EXCESS_ARGS);
     }
 
     int i;
-    arg = call_args;
+    asd_tree_t* arg = call_args;
     // Validate each argument type
     for (i = 0; i < num_expected_args; i++) {
         type_t expected_type = function_symbol->params->parameters[i]->type;
@@ -139,4 +127,16 @@ type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* tr
     }
 
     return tree_left->data_type;
+}
+
+type_t infer_var_type(scope_stack_t* scope_stack, lexical_value_t* var_id)
+{
+    symbol_t* var_decl = scope_get_symbol(scope_stack, var_id->value, var_id->line);
+
+    if (var_decl->kind != IDENTIFIER) {
+        display_function_error(var_id->value, var_id->line, var_decl->lex_value->line);
+        CLEAN_EXIT(scope_stack, ERR_FUNCTION);
+    }
+
+    return var_decl->type;
 }

@@ -19,6 +19,6 @@ empty_func returns int with x as float, y as int is [],
 declare test as int,
 
 working_func returns int with one as int, two as int, three as int, four as int, five as int is[
-	return working_func(x,y,z,2+1) as int
+	return working_func(x,y,z,2+1, 2*(1-(234))|2) as int
 ]
 ;

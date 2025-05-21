@@ -18,7 +18,7 @@ SRC := $(shell find . -maxdepth 1 -name '*.c') \
 
 OBJ := $(patsubst %.c,%.o,$(SRC))
 
-EXEC = etapa4.out
+EXEC = etapa4
 
 # Default execution to all rules
 all: $(EXEC)
@@ -42,4 +42,4 @@ $(EXEC): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm -f *.o *.out parser.tab.h parser.tab.c lex.yy.c
+	rm -f *.o etapa4 parser.tab.h parser.tab.c lex.yy.c

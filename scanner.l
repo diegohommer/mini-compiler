@@ -8,7 +8,7 @@
     #include "parser.tab.h"
 
     int get_line_number();
-    void assign_token_value(int type);
+    void assign_token_value(kind_t type);
 %}
 
 %option noyywrap yylineno noinput nounput
@@ -52,7 +52,7 @@ int get_line_number(){
     return yylineno;
 }
 
-void assign_token_value(int type){
+void assign_token_value(kind_t type){
     yylval.lexical_value = malloc(sizeof(lexical_value_t));
     yylval.lexical_value->line = get_line_number();
     yylval.lexical_value->type = type;
