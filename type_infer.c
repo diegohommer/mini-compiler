@@ -106,7 +106,7 @@ type_t infer_return_type(scope_stack_t* scope_stack, asd_tree_t* return_expr, ty
 type_t infer_if_type(scope_stack_t* scope_stack, type_t cond_type, asd_tree_t* if_block,
                      asd_tree_t* else_block)
 {
-    if (else_block != NULL) {
+    if (if_block != NULL && else_block != NULL) {
         if (if_block->data_type != else_block->data_type) {
             display_if_else_type_error(if_block->lexical_payload->line, if_block->data_type,
                                        else_block->data_type);

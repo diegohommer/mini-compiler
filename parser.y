@@ -300,7 +300,7 @@ literal: TK_LI_INT { $$ = asd_new($1->value, INT, $1, 0); free_lex_value($1); }
 
 // SCOPE NON-TERMINALS - For creating and destroying symbol tables on a given scope
 create_scope: %empty { scope_push(scope_stack); };
-destroy_scope: %empty { /*scope_stack_debug_print(scope_stack);*/ scope_pop(scope_stack); };
+destroy_scope: %empty { scope_pop(scope_stack); };
 %%
 
 void yyerror(const char *message){
