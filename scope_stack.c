@@ -71,11 +71,11 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
 
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol)
 {
+    scope_declare_symbol(stack, param_symbol);
+
     symbol_t* func_symbol = scope_get_current_function(stack);
     parameter_t* new_param = parameter_new(param_symbol->lex_value->value, param_symbol->type);
-
     symbol_add_parameter(func_symbol, new_param);
-    table_add_symbol(stack->tables[stack->num_tables - 1], param_symbol);
 }
 
 symbol_t* scope_get_current_function(scope_stack_t* stack)

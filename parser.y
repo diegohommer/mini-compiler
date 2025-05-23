@@ -181,11 +181,12 @@ atribution: TK_ID TK_PR_IS exp {
 
 // FUNCTION CALL - Calls the function with TK_ID name with call_args
 func_call: TK_ID call_args {
+  int call_type = infer_function_call_type(scope_stack, $1, $2->args, $2->count);
+  
   int len = strlen("call ") + strlen($1->value) + 1;
   char *buffer = malloc(len);
   snprintf(buffer, len, "call %s", $1->value);
 
-  int call_type = infer_function_call_type(scope_stack, $1, $2->args, $2->count);
   $$ = asd_new(buffer, call_type, $1, 1, $2->args);
 
   free($2);
