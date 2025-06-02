@@ -1,3 +1,8 @@
+/*
+ * Developed by: Diego Hommerding Amorim - 00341793
+ *           Gabriel Kenji Yatsuda Ikuta - 00337491
+ */
+
 #include "symbol_table.h"
 
 symbol_table_t* table_new(void)
@@ -17,7 +22,7 @@ void table_free(symbol_table_t* table)
         printf("Error: %s received NULL symbol table = %p.\n", __FUNCTION__, table);
         return;
     }
- 
+
     int i;
     for (i = 0; i < table->num_symbols; i++) {
         symbol_free(table->symbols[i]);
@@ -44,7 +49,6 @@ symbol_t* table_add_symbol(symbol_table_t* table, symbol_t* symbol)
     table->symbols = realloc(table->symbols, table->num_symbols * sizeof(symbol_t*));
     table->symbols[table->num_symbols - 1] = symbol;
     return NULL;
-
 }
 
 symbol_t* table_get_symbol(symbol_table_t* table, const char* label)
@@ -90,7 +94,7 @@ void symbol_free(symbol_t* symbol)
     if (symbol->params != NULL) {
         if (symbol->kind != FUNCTION) {
             printf("Error: symbol of kind %d has parameters, but is not a FUNCTION\n",
-                    symbol->kind);
+                   symbol->kind);
         }
 
         int i;
@@ -168,7 +172,7 @@ parameter_t* parameter_new(const char* label, type_t type)
 
 void parameter_free(parameter_t* param)
 {
-    if (param != NULL){
+    if (param != NULL) {
         free(param->label);
     }
     free(param);

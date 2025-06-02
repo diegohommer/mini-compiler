@@ -1,3 +1,8 @@
+/*
+ * Developed by: Diego Hommerding Amorim - 00341793
+ *           Gabriel Kenji Yatsuda Ikuta - 00337491
+ */
+
 #ifndef _ASD_H_
 #define _ASD_H_
 
@@ -17,7 +22,7 @@ typedef enum { INT = 0, FLOAT = 1 } type_t;
  * @enum kind_t
  * @brief Represents the kind of symbol in the abstract syntax tree (AST).
  */
-typedef enum { IDENTIFIER = 1, LITERAL = 2, FUNCTION = 3 } kind_t;
+typedef enum { IDENTIFIER = 0, LITERAL = 1, FUNCTION = 2 } kind_t;
 
 /**
  * @struct lexical_value_t
@@ -25,7 +30,7 @@ typedef enum { IDENTIFIER = 1, LITERAL = 2, FUNCTION = 3 } kind_t;
  */
 typedef struct lexical_value {
     int line;    /**< Source code line number */
-    int type;    /**< Token kind/type (IDENTIFIER or LITERAL) */
+    kind_t type; /**< Token kind (IDENTIFIER or LITERAL) */
     char *value; /**< Lexeme string */
 } lexical_value_t;
 
@@ -35,7 +40,7 @@ typedef struct lexical_value {
  */
 typedef struct asd_tree {
     char *label;                      /**< Node label */
-    int data_type;                    /**< Data type (INT or FLOAT) */
+    type_t data_type;                 /**< Data type (INT or FLOAT) */
     int number_of_children;           /**< Number of child nodes */
     struct asd_tree **children;       /**< Array of pointers to child nodes */
     lexical_value_t *lexical_payload; /**< Associated lexical information, if any */

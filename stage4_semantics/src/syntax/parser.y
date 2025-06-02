@@ -1,27 +1,40 @@
-%{
+%code requires {
+  /*
+   * Developed by: Diego Hommerding Amorim - 00341793
+   *           Gabriel Kenji Yatsuda Ikuta - 00337491
+   */
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
 
   #include "type_infer.h"
 
+  typedef struct arg {
+      int count;
+      asd_tree_t* args;
+  } arg_t;
+}
+
+%code {
   int yylex(void);
   void yyerror (char const *mensagem);
   asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op, asd_tree_t* right);
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
+  arg_t* create_arg(asd_tree_t* args, int count);
   type_t get_token_type(lexical_value_t* lexical_value);
   void free_lex_value(lexical_value_t* lexical_value);
 
   extern int get_line_number(void);
   extern asd_tree_t *tree;
   extern scope_stack_t *scope_stack;
-%}
+}
 
 %union {
   char* str;
-  int type;
+  type_t type;
   asd_tree_t* tree;
   lexical_value_t* lexical_value;
+  arg_t* args;
 }
 
 %destructor {
@@ -51,10 +64,11 @@
 %token TK_ER
 
 %type <tree> def_func func_header func_body var_decl var_init
-%type <tree> prog_list element cmd_block func_cmd_block cmd_list call_args call_args_list
+%type <tree> prog_list element cmd_block func_cmd_block cmd_list
 %type <tree> simple_cmd atribution func_call return_cmd if_else_cmd else_cmd while_cmd
 %type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops literal
 %type <str> prec5_ops prec4_ops prec3_ops prec2_ops prec1_ops
+%type <args> call_args call_args_list
 %type <type> type
 
 %define parse.error verbose
@@ -151,8 +165,8 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type {
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
   type_t var_type = infer_initialization_type(scope_stack, $2, $4, $6->data_type);
-  $$ = asd_new("with", var_type, $2, 2, asd_new($2->value, var_type, $2, 0), $6);
   scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, var_type, $2));
+  $$ = asd_new("with", var_type, $2, 2, asd_new($2->value, var_type, $2, 0), $6);
   free_lex_value($2);
 }
 
@@ -167,23 +181,29 @@ atribution: TK_ID TK_PR_IS exp {
 
 // FUNCTION CALL - Calls the function with TK_ID name with call_args
 func_call: TK_ID call_args {
+  int call_type = infer_function_call_type(scope_stack, $1, $2->args, $2->count);
+
   int len = strlen("call ") + strlen($1->value) + 1;
   char *buffer = malloc(len);
   snprintf(buffer, len, "call %s", $1->value);
 
-  int call_type = infer_function_call_type(scope_stack, $1, $2);
-  $$ = asd_new(buffer, call_type, $1, 1, $2);
+  $$ = asd_new(buffer, call_type, $1, 1, $2->args);
 
-  free_lex_value($1);
+  free($2);
   free(buffer);
+  free_lex_value($1);
 };
 
 // CALL ARGUMENTS - A optional () delimited list of comma-separated arguments
 call_args: '(' call_args_list ')' { $$ = $2; }
-         | '(' ')' { $$ = NULL; };
+         | '(' ')' { $$ = create_arg(NULL, 0); };
 
-call_args_list: exp { $$ = $1; }
-              | exp ',' call_args_list { $$ = build_list($1, $3); };
+call_args_list: exp { $$ = create_arg($1, 1); }
+              | exp ',' call_args_list {
+                  asd_add_child($1, $3->args);
+                  $$ = create_arg($1, 1 + $3->count);
+                  free($3);
+                };
 
 
 // RETURN COMMAND - Defines return statement with an expression and its type.
@@ -262,7 +282,7 @@ n1: prec1_ops n1 { $$ = asd_new($1, $2->data_type, $2->lexical_payload, 1, $2); 
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
 prec0_ops: func_call { $$ = $1; } 
-         | TK_ID { $$ = asd_new($1->value, get_token_type($1), $1, 0); free_lex_value($1); } 
+         | TK_ID { $$ = asd_new($1->value, infer_var_type(scope_stack, $1), $1, 0); free_lex_value($1); }
          | literal { $$ = $1; }
          | '(' exp ')'{ $$ = $2; };
 n0: prec0_ops { $$ = $1; };
@@ -281,7 +301,7 @@ literal: TK_LI_INT { $$ = asd_new($1->value, INT, $1, 0); free_lex_value($1); }
 
 // SCOPE NON-TERMINALS - For creating and destroying symbol tables on a given scope
 create_scope: %empty { scope_push(scope_stack); };
-destroy_scope: %empty { /*scope_stack_debug_print(scope_stack);*/ scope_pop(scope_stack); };
+destroy_scope: %empty { scope_pop(scope_stack); };
 %%
 
 void yyerror(const char *message){
@@ -303,9 +323,11 @@ asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail) {
   }
 }
 
-type_t get_token_type(lexical_value_t* lexical_value) {
-  symbol_t* decl_symbol = scope_get_symbol(scope_stack, lexical_value->value, lexical_value->line);
-  return decl_symbol->type;
+arg_t* create_arg(asd_tree_t* args, int count) {
+    arg_t* arg = malloc(sizeof(arg_t));
+    arg->count = count;
+    arg->args = args;
+    return arg;
 }
 
 void free_lex_value(lexical_value_t* lexical_value) {

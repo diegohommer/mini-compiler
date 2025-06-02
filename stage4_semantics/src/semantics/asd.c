@@ -1,10 +1,16 @@
+/*
+ * Developed by: Diego Hommerding Amorim - 00341793
+ *           Gabriel Kenji Yatsuda Ikuta - 00337491
+ */
+
 #include "asd.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payload, int num_children, ...)
+asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payload, int num_children,
+                    ...)
 {
     asd_tree_t *ret = NULL;
     ret = calloc(1, sizeof(asd_tree_t));
@@ -27,7 +33,7 @@ asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payloa
         va_start(args, num_children);
 
         for (int i = 0; i < num_children; ++i) {
-            asd_tree_t* child = va_arg(args, asd_tree_t*);
+            asd_tree_t *child = va_arg(args, asd_tree_t *);
             if (child != NULL) {
                 asd_add_child(ret, child);
             }
