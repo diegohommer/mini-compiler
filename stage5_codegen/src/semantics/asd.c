@@ -78,15 +78,9 @@ void asd_add_child(asd_tree_t *tree, asd_tree_t *child)
     }
 }
 
-void asd_set_code(asd_tree_t* tree, iloc_op_list_t *code)
-{
-    tree->code = code;
-}
+void asd_set_code(asd_tree_t *tree, iloc_op_list_t *code) { tree->code = code; }
 
-void asd_set_temp(asd_tree_t *tree, char *temp)
-{
-    tree->temp = temp;
-}
+void asd_set_temp(asd_tree_t *tree, char *temp) { tree->temp = temp; }
 
 static void _asd_print(FILE *foutput, asd_tree_t *tree, int depth)
 {
