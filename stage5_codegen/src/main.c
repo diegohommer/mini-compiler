@@ -14,9 +14,11 @@ int main(int argc, char **argv)
 {
     scope_stack = scope_stack_new();
     int ret = yyparse();
-    asd_print_graphviz(tree);
-    iloc_op_list_free(tree->code);
-    asd_free(tree);
+    if(tree) {
+        asd_print_graphviz(tree);
+        iloc_op_list_free(tree->code);
+        asd_free(tree);
+    }
     scope_stack_free(scope_stack);
     yylex_destroy();
     return ret;
