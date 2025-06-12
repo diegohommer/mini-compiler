@@ -5,6 +5,11 @@
 
 #include "scope_stack.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "errors.h"
+
 scope_stack_t* scope_stack_new(void)
 {
     scope_stack_t* new_stack = NULL;

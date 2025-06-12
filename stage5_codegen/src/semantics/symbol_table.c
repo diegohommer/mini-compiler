@@ -5,6 +5,10 @@
 
 #include "symbol_table.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 symbol_table_t* table_new(void)
 {
     symbol_table_t* new_table = NULL;
