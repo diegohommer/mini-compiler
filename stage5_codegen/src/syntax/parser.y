@@ -289,7 +289,20 @@ n0: prec0_ops { $$ = $1; };
 // TYPE AND LITERAL TOKENS
 type: TK_PR_INT { $$ = INT; }
     | TK_PR_FLOAT { $$ = FLOAT; };
-literal: TK_LI_INT { $$ = asd_new($1->value, INT, $1, 0); free_lex_value($1); }
+literal: TK_LI_INT {
+            // Create AST Node
+            $$ = asd_new($1->value, INT, $1, 0);
+
+            // Generate ILOC code: loadI <value> => <temp>
+            char* temp = temp_new();
+            iloc_op_list_t* code = iloc_op_list_new();
+            iloc_op_t* op = iloc_op_new("loadI", $1->value, temp, NULL);
+            iloc_op_list_add_op(code, op);
+            asd_set_code($$, code);
+            asd_set_temp($$, temp);
+
+            free_lex_value($1);
+        }
        | TK_LI_FLOAT { $$ = asd_new($1->value, FLOAT, $1, 0); free_lex_value($1); };
 
 
