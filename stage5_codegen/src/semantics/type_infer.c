@@ -5,6 +5,7 @@
 
 #include "type_infer.h"
 
+#include <errors.h>
 #include <stdlib.h>
 
 type_t infer_initialization_type(scope_stack_t* scope_stack, lexical_value_t* var_id,
