@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int label_counter = 0;
-static int temp_counter = 0;
+static int label_counter = 1;
+static int temp_counter = 1;
 
 char* temp_new(void)
 {

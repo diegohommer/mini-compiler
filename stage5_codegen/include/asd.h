@@ -6,6 +6,7 @@
 #ifndef _ASD_H_
 #define _ASD_H_
 
+#include <iloc_gen.h>
 #include <stdarg.h>
 #include <stddef.h>
 
@@ -36,11 +37,14 @@ typedef struct lexical_value {
  * @brief Represents a node in the abstract syntax tree (AST).
  */
 typedef struct asd_tree {
-    char *label;                      /**< Node label */
-    type_t data_type;                 /**< Data type (INT or FLOAT) */
-    int number_of_children;           /**< Number of child nodes */
-    struct asd_tree **children;       /**< Array of pointers to child nodes */
+    char *label;                /**< Node label */
+    type_t data_type;           /**< Data type (INT or FLOAT) */
+    int number_of_children;     /**< Number of child nodes */
+    struct asd_tree **children; /**< Array of pointers to child nodes */
+
     lexical_value_t *lexical_payload; /**< Associated lexical information, if any */
+    iloc_op_list_t *code;             /**< List with ILOC code generated for this node */
+    char *temp;                       /**< Temporary register name where the result is stored */
 } asd_tree_t;
 
 /**
@@ -62,7 +66,7 @@ asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payloa
 /**
  * @brief Frees an AST node and all its descendants.
  *
- * Also frees the copied label and lexical payload.
+ * Also frees the copied label, lexical payload and temp label.
  *
  * @param tree Pointer to the root node to free.
  */
@@ -75,6 +79,27 @@ void asd_free(asd_tree_t *tree);
  * @param child Pointer to the child node to add.
  */
 void asd_add_child(asd_tree_t *tree, asd_tree_t *child);
+
+/**
+ * @brief Sets the ILOC code list for the current AST node.
+ *
+ * Associates a list of ILOC operations with the node, typically representing
+ * the intermediate code generated during translation.
+ *
+ * @param tree Pointer to the AST node.
+ * @param code Pointer to the ILOC operation list to associate with the node.
+ */
+void asd_set_code(asd_tree_t *tree, iloc_op_list_t *code);
+
+/**
+ * @brief Sets the temporary register name where the node’s result is stored.
+ *
+ * Assigns a string representing the temporary used to store the result of evaluating this node.
+ *
+ * @param tree Pointer to the AST node.
+ * @param temp Pointer to a string containing the temporary register name (e.g., "r1", "r2").
+ */
+void asd_set_temp(asd_tree_t *tree, char *temp);
 
 /**
  * @brief Recursively prints the AST in a readable, indented format.

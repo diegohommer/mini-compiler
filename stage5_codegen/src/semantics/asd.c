@@ -19,6 +19,8 @@ asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payloa
         ret->data_type = (int)data_type;
         ret->number_of_children = 0;
         ret->children = NULL;
+        ret->code = NULL;
+        ret->temp = NULL;
 
         if (payload != NULL) {
             lexical_value_t *local_copy = malloc(sizeof(lexical_value_t));
@@ -57,6 +59,7 @@ void asd_free(asd_tree_t *tree)
             free(tree->lexical_payload->value);
         }
         free(tree->lexical_payload);
+        free(tree->temp);
         free(tree);
     } else {
         printf("Error: %s received parameter tree = %p.\n", __FUNCTION__, tree);
@@ -73,6 +76,16 @@ void asd_add_child(asd_tree_t *tree, asd_tree_t *child)
     } else {
         printf("Error: %s received parameter tree = %p / %p.\n", __FUNCTION__, tree, child);
     }
+}
+
+void asd_set_code(asd_tree_t* tree, iloc_op_list_t *code)
+{
+    tree->code = code;
+}
+
+void asd_set_temp(asd_tree_t *tree, char *temp)
+{
+    tree->temp = temp;
 }
 
 static void _asd_print(FILE *foutput, asd_tree_t *tree, int depth)
