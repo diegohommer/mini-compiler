@@ -107,4 +107,15 @@ void iloc_op_list_add_op(iloc_op_list_t* list, iloc_op_t* op);
  */
 iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* right_list);
 
+/**
+ * @brief Prints all ILOC instructions in the list for debugging purposes.
+ *
+ * This function iterates over the linked list of ILOC operations
+ * and prints the opcode and operands of each instruction.
+ * It is intended as a simple debug helper and does not format output.
+ *
+ * @param list Pointer to the ILOC operation list to print. If NULL, prints a message.
+ */
+void print_iloc_list_debug(const iloc_op_list_t* list);
+
 #endif  // ILOC_GEN_H

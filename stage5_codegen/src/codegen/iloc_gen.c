@@ -1,4 +1,4 @@
-#include <iloc_gen.h>
+#include "iloc_gen.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -117,4 +117,23 @@ iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* r
     right_list->count = 0;
 
     return left_list;
+}
+
+void print_iloc_list_debug(const iloc_op_list_t* list)
+{
+    if (list == NULL) {
+        printf("ILOC list is NULL\n");
+        return;
+    }
+
+    iloc_op_t* current = list->head;
+    int index = 0;
+    while (current != NULL) {
+        printf("Instruction %d:\n", index++);
+        printf("  opcode:   %s\n", current->opcode ? current->opcode : "(null)");
+        printf("  operand1: %s\n", current->operand1 ? current->operand1 : "(null)");
+        printf("  operand2: %s\n", current->operand2 ? current->operand2 : "(null)");
+        printf("  operand3: %s\n", current->operand3 ? current->operand3 : "(null)");
+        current = current->next;
+    }
 }
