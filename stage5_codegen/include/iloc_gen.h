@@ -43,6 +43,18 @@ char* label_new(void);
 char* temp_new(void);
 
 /**
+ * @brief Maps a high-level operator string to its corresponding ILOC opcode.
+ *
+ * This function returns the appropriate ILOC opcode for a given operator,
+ * to be used during code generation.
+ *
+ * @param op A null-terminated string representing a high-level operator.
+ * @return A pointer to a constant string representing the ILOC opcode,
+ *         or NULL if the operator is not recognized.
+ */
+const char* op_to_iloc(const char* op);
+
+/**
  * @brief Creates a new ILOC operation.
  *
  * Allocates and initializes an ILOC operation with the given opcode and operands.

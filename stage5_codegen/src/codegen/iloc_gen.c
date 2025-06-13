@@ -1,4 +1,5 @@
 #include "iloc_gen.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,8 +11,7 @@ char* temp_new(void)
 {
     int length = snprintf(NULL, 0, "r%d", temp_counter);
     char* name = malloc(length + 1);
-    if (!name)
-        return NULL;
+    if (!name) return NULL;
     sprintf(name, "r%d", temp_counter++);
     return name;
 }
@@ -20,10 +20,27 @@ char* label_new(void)
 {
     int length = snprintf(NULL, 0, "l%d", label_counter);
     char* name = malloc(length + 1);
-    if (!name)
-        return NULL;
+    if (!name) return NULL;
     sprintf(name, "l%d", label_counter++);
     return name;
+}
+
+const char* op_to_iloc(const char* op)
+{
+    if (strcmp(op, "+") == 0) return "add";
+    if (strcmp(op, "-") == 0) return "sub";
+    if (strcmp(op, "*") == 0) return "mult";
+    if (strcmp(op, "/") == 0) return "div";
+    if (strcmp(op, "%") == 0) return "mod";
+    if (strcmp(op, "==") == 0) return "cmp_EQ";
+    if (strcmp(op, "!=") == 0) return "cmp_NE";
+    if (strcmp(op, "<") == 0) return "cmp_LT";
+    if (strcmp(op, ">") == 0) return "cmp_GT";
+    if (strcmp(op, "<=") == 0) return "cmp_LE";
+    if (strcmp(op, ">=") == 0) return "cmp_GE";
+    if (strcmp(op, "&") == 0) return "and";
+    if (strcmp(op, "|") == 0) return "or";
+    return NULL;
 }
 
 iloc_op_t* iloc_op_new(const char* opcode, const char* op1, const char* op2, const char* op3)
