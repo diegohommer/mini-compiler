@@ -18,7 +18,8 @@
 %code {
   int yylex(void);
   void yyerror (char const *mensagem);
-  asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op, asd_tree_t* right);
+  asd_tree_t* make_unary_exp_tree(const char* op_token, asd_tree_t* operand);
+  asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op_token, asd_tree_t* right);
   asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
   arg_t* create_arg(asd_tree_t* args, int count);
   type_t get_token_type(lexical_value_t* lexical_value);
@@ -276,7 +277,7 @@ n2: n2 prec2_ops n1 { $$ = make_exp_tree($1, $2, $3); }
 prec1_ops: '+' { $$ = "+"; } 
          | '-' { $$ = "-"; } 
          | '!' { $$ = "!"; };
-n1: prec1_ops n1 { $$ = asd_new($1, $2->data_type, $2->lexical_payload, 1, $2); }
+n1: prec1_ops n1 { $$ = make_unary_exp_tree($1, $2); }
   | n0 { $$ = $1; };
 
 // PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
@@ -296,8 +297,8 @@ literal: TK_LI_INT {
             // Generate ILOC code: loadI <value> => <temp>
             char* temp = temp_new();
             iloc_op_list_t* code = iloc_op_list_new();
-            iloc_op_t* op = iloc_op_new("loadI", $1->value, temp, NULL);
-            iloc_op_list_add_op(code, op);
+            iloc_op_t* iloc_op = iloc_op_new("loadI", $1->value, temp, NULL);
+            iloc_op_list_add_op(code, iloc_op);
             asd_set_code($$, code);
             asd_set_temp($$, temp);
 
@@ -320,10 +321,49 @@ void yyerror(const char *message){
   fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
 }
 
-asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op, asd_tree_t* right)
+asd_tree_t* make_unary_exp_tree(const char* op_token, asd_tree_t* operand)
 {
-  type_t exp_type = infer_exp_type(scope_stack, op, left, right);
-  return asd_new(op, exp_type, left->lexical_payload, 2, left, right);
+    // Create AST node
+    asd_tree_t* tree = asd_new(op_token, operand->data_type, operand->lexical_payload, 1, operand);
+
+    // Generate ILOC code for the expression
+    char* temp = temp_new();
+    iloc_op_list_t* code = operand->code;
+    iloc_op_t* op = NULL;
+
+    if (strcmp(op_token, "-") == 0) {
+        op = iloc_op_new("multI", operand->temp, "-1", temp);
+    } else if (strcmp(op_token, "+") == 0) {
+        op = iloc_op_new("i2i", operand->temp, temp, NULL);
+    } else if (strcmp(op_token, "!") == 0) {
+        op = iloc_op_new("xorI", operand->temp, "1", temp);
+    }
+
+    iloc_op_list_add_op(code, op);
+    asd_set_code(tree, code);
+    asd_set_temp(tree, temp);
+
+    return tree;
+}
+
+asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op_token, asd_tree_t* right)
+{
+  // Create AST Node with inferred expression type
+  type_t exp_type = infer_exp_type(scope_stack, op_token, left, right);
+  asd_tree_t* tree = asd_new(op_token, exp_type, left->lexical_payload, 2, left, right);
+
+  // Generate ILOC code for the expression
+  char* temp = temp_new();
+  const char* opcode = op_to_iloc(op_token);
+  iloc_op_t* op = iloc_op_new(opcode, left->temp, right->temp, temp);
+  iloc_op_list_t* code = iloc_op_list_concat(left->code, right->code);
+  iloc_op_list_add_op(code, op);
+  asd_set_code(tree, code);
+  asd_set_temp(tree, temp);
+
+  print_iloc_list_debug(tree->code);
+
+  return tree;
 }
 
 asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail) {
