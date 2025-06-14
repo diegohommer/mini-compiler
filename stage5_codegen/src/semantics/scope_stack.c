@@ -15,8 +15,10 @@ scope_stack_t* scope_stack_new(void)
     scope_stack_t* new_stack = NULL;
     new_stack = calloc(1, sizeof(scope_stack_t));
     if (new_stack != NULL) {
-        new_stack->num_tables = 0;
         new_stack->tables = NULL;
+        new_stack->num_tables = 0;
+        new_stack->rfp = 0;
+        new_stack->rbss = 0;
     }
     return new_stack;
 }

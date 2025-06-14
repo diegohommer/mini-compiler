@@ -21,7 +21,16 @@
 typedef struct {
     symbol_table_t** tables; /**< Array of symbol table pointers, one per scope. */
     int num_tables;          /**< Number of scopes currently in the stack. */
+    int rfp;                 /**< Current frame pointer offset for local variables */
+    int rbss;                /**< Current offset for global variables */
 } scope_stack_t;
+
+/**
+ * @brief Resets the frame pointer offset to zero.
+ *
+ * @param stack Pointer to the scope stack.
+ */
+static inline void scope_stack_reset_rfp(scope_stack_t* stack) { stack->rfp = 0; }
 
 /**
  * @brief Creates and initializes an empty scope stack.
