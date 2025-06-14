@@ -23,26 +23,26 @@
  * representing arithmetic, logical, control flow, and memory operations.
  */
 typedef enum {
-    OP_NOP,    /**< nop */
-    OP_ADD,    /**< add r1, r2 => r3 */
-    OP_SUB,    /**< sub r1, r2 => r3 */
-    OP_MULT,   /**< mult r1, r2 => r3 */
-    OP_DIV,    /**< div r1, r2 => r3 */
-    OP_MULTI,  /**< multI r1, c2 => r3 */
-    OP_AND,    /**< and r1, r2 => r3 */
-    OP_OR,     /**< or r1, r2 => r3 */
-    OP_XORI,   /**< xorI r1, c2 => r3 */
-    OP_LOADAI, /**< loadAI r1, c2 => r2 */
-    OP_LOADI,  /**< loadI c1 => r2 */
-    OP_STORE,  /**< store r1 => r2 */
-    OP_JUMPI,  /**< jumpI -> l1 */
-    OP_CBR,    /**< cbr r1 -> l2, l3 */
-    OP_CMP_LT, /**< cmp_LT r1, r2 -> r3 */
-    OP_CMP_LE, /**< cmp_LE r1, r2 -> r3 */
-    OP_CMP_EQ, /**< cmp_EQ r1, r2 -> r3 */
-    OP_CMP_GE, /**< cmp_GE r1, r2 -> r3 */
-    OP_CMP_GT, /**< cmp_GT r1, r2 -> r3 */
-    OP_CMP_NE, /**< cmp_NE r1, r2 -> r3 */
+    OP_NOP,     /**< nop */
+    OP_ADD,     /**< add r1, r2 => r3 */
+    OP_SUB,     /**< sub r1, r2 => r3 */
+    OP_MULT,    /**< mult r1, r2 => r3 */
+    OP_DIV,     /**< div r1, r2 => r3 */
+    OP_MULTI,   /**< multI r1, c2 => r3 */
+    OP_AND,     /**< and r1, r2 => r3 */
+    OP_OR,      /**< or r1, r2 => r3 */
+    OP_XORI,    /**< xorI r1, c2 => r3 */
+    OP_LOADAI,  /**< loadAI r1, c2 => r2 */
+    OP_STOREAI, /**< storeAI r1, c2 => r2 */
+    OP_LOADI,   /**< loadI c1 => r2 */
+    OP_JUMPI,   /**< jumpI -> l1 */
+    OP_CBR,     /**< cbr r1 -> l2, l3 */
+    OP_CMP_LT,  /**< cmp_LT r1, r2 -> r3 */
+    OP_CMP_LE,  /**< cmp_LE r1, r2 -> r3 */
+    OP_CMP_EQ,  /**< cmp_EQ r1, r2 -> r3 */
+    OP_CMP_GE,  /**< cmp_GE r1, r2 -> r3 */
+    OP_CMP_GT,  /**< cmp_GT r1, r2 -> r3 */
+    OP_CMP_NE,  /**< cmp_NE r1, r2 -> r3 */
     OP_INVALID,
 } opcode_t;
 
