@@ -6,7 +6,14 @@
 #ifndef ILOC_GEN_H
 #define ILOC_GEN_H
 
+#include <stdio.h>
+
+#define RBSS_ID -2
+#define RFP_ID  -1
+
 #define UNUSED_OPERAND 0
+
+#define INT_SIZE 4
 
 /**
  * @enum opcode_t
@@ -24,7 +31,8 @@ typedef enum {
     OP_MULTI,  /**< multI r1, c2 => r3 */
     OP_AND,    /**< and r1, r2 => r3 */
     OP_OR,     /**< or r1, r2 => r3 */
-    OP_XORI,   /**< xorI r1, r2 => r3 */
+    OP_XORI,   /**< xorI r1, c2 => r3 */
+    OP_LOADAI, /**< loadAI r1, c2 => r2 */
     OP_LOADI,  /**< loadI c1 => r2 */
     OP_STORE,  /**< store r1 => r2 */
     OP_JUMPI,  /**< jumpI -> l1 */
@@ -37,46 +45,6 @@ typedef enum {
     OP_CMP_NE, /**< cmp_NE r1, r2 -> r3 */
     OP_INVALID,
 } opcode_t;
-
-/**
- * @brief Represents an ILOC opcode format and its parameter count.
- */
-typedef struct {
-    const char* format; /**< printf-style format string */
-    int param_count;    /**< number of operands expected */
-} iloc_opcode_format_t;
-
-/**
- * @brief Format strings and parameter counts for ILOC instructions.
- *
- * Indexed by `opcode_t`.
- * Operand placeholders:
- *  - `r%d` for registers,
- *  - `l%d` for labels,
- *  - `%d` for immediate constants.
- */
-static const iloc_opcode_format_t opcode_formats[] = {
-    [OP_INVALID] = {"invalid", 0},
-    [OP_NOP] = {"nop", 0},
-    [OP_ADD] = {"add r%d, r%d => r%d", 3},
-    [OP_SUB] = {"sub r%d, r%d => r%d", 3},
-    [OP_MULT] = {"mult r%d, r%d => r%d", 3},
-    [OP_DIV] = {"div r%d, r%d => r%d", 3},
-    [OP_MULTI] = {"multI r%d, %d => r%d", 3},
-    [OP_AND] = {"and r%d, r%d => r%d", 3},
-    [OP_OR] = {"or r%d, r%d => r%d", 3},
-    [OP_XORI] = {"xorI r%d, %d => r%d", 3},
-    [OP_LOADI] = {"loadI %d => r%d", 2},
-    [OP_STORE] = {"store r%d => r%d", 2},
-    [OP_JUMPI] = {"jumpI -> l%d", 1},
-    [OP_CBR] = {"cbr r%d -> l%d, l%d", 3},
-    [OP_CMP_LT] = {"cmp_LT r%d, r%d -> r%d", 3},
-    [OP_CMP_LE] = {"cmp_LE r%d, r%d -> r%d", 3},
-    [OP_CMP_EQ] = {"cmp_EQ r%d, r%d -> r%d", 3},
-    [OP_CMP_GE] = {"cmp_GE r%d, r%d -> r%d", 3},
-    [OP_CMP_GT] = {"cmp_GT r%d, r%d -> r%d", 3},
-    [OP_CMP_NE] = {"cmp_NE r%d, r%d -> r%d", 3},
-};
 
 /**
  * @struct iloc_op_t
@@ -145,6 +113,21 @@ iloc_op_t* iloc_op_new(opcode_t opcode, int op1, int op2, int op3);
  * @param op Pointer to the iloc_op_t structure to free.
  */
 void iloc_op_free(iloc_op_t* op);
+
+/**
+ * @brief Writes the string representation of a register operand into the provided buffer.
+ *
+ * Special register IDs like `rfp` and `rbss` are mapped to their names.
+ * Other registers are represented as `rX` where X is the register ID.
+ *
+ * @param reg_id Register ID.
+ * @param buf Buffer to write the string into.
+ * @param bufsize Size of the buffer.
+ * @return Pointer to the buffer containing the register name.
+ *
+ * @note The buffer must be large enough to hold the string.
+ */
+const char* iloc_reg_to_str(int reg_id, char* buf, size_t bufsize);
 
 /**
  * @brief Prints a single ILOC instruction formatted according to its opcode.

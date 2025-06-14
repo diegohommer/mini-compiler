@@ -7,6 +7,22 @@
 static int label_counter = 1;
 static int temp_counter = 1;
 
+/**
+ * @brief Array of strings representing the mnemonic names of ILOC opcodes.
+ *
+ * Indexed by `opcode_t`.
+ * Each entry corresponds to the textual opcode name without operand formatting.
+ */
+static const char* opcode_names[] = {
+    [OP_INVALID] = "invalid", [OP_NOP] = "nop",       [OP_ADD] = "add",
+    [OP_SUB] = "sub",         [OP_MULT] = "mult",     [OP_DIV] = "div",
+    [OP_MULTI] = "multI",     [OP_AND] = "and",       [OP_OR] = "or",
+    [OP_XORI] = "xorI",       [OP_LOADAI] = "loadAI", [OP_LOADI] = "loadI",
+    [OP_STORE] = "store",     [OP_JUMPI] = "jumpI",   [OP_CBR] = "cbr",
+    [OP_CMP_LT] = "cmp_LT",   [OP_CMP_LE] = "cmp_LE", [OP_CMP_EQ] = "cmp_EQ",
+    [OP_CMP_GE] = "cmp_GE",   [OP_CMP_GT] = "cmp_GT", [OP_CMP_NE] = "cmp_NE",
+};
+
 int temp_new(void) { return temp_counter++; }
 
 int label_new(void) { return label_counter++; }
@@ -52,6 +68,18 @@ void iloc_op_free(iloc_op_t* op)
     free(op);
 }
 
+const char* iloc_reg_to_str(int reg_id, char* buf, size_t bufsize)
+{
+    if (reg_id == RBSS_ID) {
+        snprintf(buf, bufsize, "rbss");
+    } else if (reg_id == RFP_ID) {
+        snprintf(buf, bufsize, "rfp");
+    } else {
+        snprintf(buf, bufsize, "r%d", reg_id);
+    }
+    return buf;
+}
+
 void print_iloc_op(const iloc_op_t* op)
 {
     if (op == NULL) {
@@ -59,25 +87,77 @@ void print_iloc_op(const iloc_op_t* op)
         return;
     }
 
-    const iloc_opcode_format_t* fmt = &opcode_formats[op->opcode];
-    switch (fmt->param_count) {
-        case 0:
-            printf("%s\n", fmt->format);
+    // Buffers for storing possible register 'rX' strings
+    char buf1[16], buf2[16], buf3[16];
+
+    switch (op->opcode) {
+        case OP_NOP:
+            // opcode: nop
+            printf("nop\n");
             break;
-        case 1:
-            printf(fmt->format, op->operand1);
-            printf("\n");
+
+        case OP_ADD:
+        case OP_SUB:
+        case OP_MULT:
+        case OP_DIV:
+        case OP_AND:
+        case OP_OR:
+            // opcode r1, r2 => r3
+            iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
+            iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
+            iloc_reg_to_str(op->operand3, buf3, sizeof(buf3));
+            printf("%s %s, %s => %s\n", opcode_names[op->opcode], buf1, buf2, buf3);
             break;
-        case 2:
-            printf(fmt->format, op->operand1, op->operand2);
-            printf("\n");
+
+        case OP_MULTI:
+        case OP_XORI:
+        case OP_LOADAI:
+            // opcode r1, c2 => r3
+            iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
+            iloc_reg_to_str(op->operand3, buf3, sizeof(buf3));
+            printf("%s %s, %d => %s\n", opcode_names[op->opcode], buf1, op->operand2, buf3);
             break;
-        case 3:
-            printf(fmt->format, op->operand1, op->operand2, op->operand3);
-            printf("\n");
+
+        case OP_LOADI:
+            // opcode c1 => r2
+            iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
+            printf("%s %d => %s\n", opcode_names[op->opcode], op->operand1, buf2);
             break;
+
+        case OP_STORE:
+            // opcode r1 => r2
+            iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
+            iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
+            printf("%s %s => %s\n", opcode_names[op->opcode], buf1, buf2);
+            break;
+
+        case OP_JUMPI:
+            // opcode -> l1
+            printf("%s -> l%d\n", opcode_names[op->opcode], op->operand1);
+            break;
+
+        case OP_CBR:
+            // opcode r1 -> l2, l3
+            iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
+            printf("%s %s -> l%d, l%d\n", opcode_names[op->opcode], buf1, op->operand2,
+                   op->operand3);
+            break;
+
+        case OP_CMP_LT:
+        case OP_CMP_LE:
+        case OP_CMP_EQ:
+        case OP_CMP_GE:
+        case OP_CMP_GT:
+        case OP_CMP_NE:
+            // opcode r1, r2 -> r3
+            iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
+            iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
+            iloc_reg_to_str(op->operand3, buf3, sizeof(buf3));
+            printf("%s %s, %s -> %s\n", opcode_names[op->opcode], buf1, buf2, buf3);
+            break;
+
         default:
-            printf("Invalid param_count %d for opcode %d\n", fmt->param_count, op->opcode);
+            printf("Unknown opcode %d\n", op->opcode);
             break;
     }
 }
