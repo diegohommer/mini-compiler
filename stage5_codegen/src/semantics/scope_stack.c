@@ -58,11 +58,11 @@ void scope_pop(scope_stack_t* stack)
     stack->tables = realloc(stack->tables, stack->num_tables * sizeof(symbol_table_t*));
 }
 
-void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
+symbol_t* scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
 {
     if (stack == NULL || stack->num_tables == 0) {
         printf("Error: %s called with invalid stack or empty scope stack.\n", __FUNCTION__);
-        return;
+        return NULL;
     }
 
     symbol_table_t* current_scope = stack->tables[stack->num_tables - 1];
@@ -74,6 +74,21 @@ void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
                                declared_symbol->lex_value->line);
         CLEAN_EXIT(stack, ERR_DECLARED);
     }
+
+    // If symbol is a variable (not function or literal), assign memory offset
+    if (symbol->kind == IDENTIFIER) {
+        if (stack->num_tables == 1) {
+            // Global variable -> .bss segment
+            stack->rbss += INT_SIZE;
+            symbol->offset = stack->rbss;
+        } else {
+            // Local variable -> relative to frame pointer
+            stack->rfp += INT_SIZE;
+            symbol->offset = stack->rfp;
+        }
+    }
+
+    return symbol;
 }
 
 void scope_declare_function_parameter(scope_stack_t* stack, symbol_t* param_symbol)

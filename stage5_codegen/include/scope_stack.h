@@ -63,12 +63,17 @@ void scope_pop(scope_stack_t* stack);
 /**
  * @brief Declares a new symbol in the current (top) scope.
  *
+ * Adds the symbol to the current scope if not already declared.
+ * If the symbol is a variable (IDENTIFIER), assigns its memory offset
+ * relative to RFP (for local variables) or RBSS (for global variables).
+ *
  * @param stack Pointer to the scope stack.
- * @param symbol Symbol to declare.
+ * @param symbol Pointer to the symbol to declare.
+ * @return Pointer to the newly declared symbol.
  *
  * @note Exits with ERR_DECLARED if the symbol is already declared in this scope.
  */
-void scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol);
+symbol_t* scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol);
 
 /**
  * @brief Declares a function parameter for the function currently being defined.
