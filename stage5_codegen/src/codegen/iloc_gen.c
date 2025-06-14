@@ -7,52 +7,38 @@
 static int label_counter = 1;
 static int temp_counter = 1;
 
-char* temp_new(void)
+int temp_new(void) { return temp_counter++; }
+
+int label_new(void) { return label_counter++; }
+
+opcode_t operator_to_opcode(const char* op)
 {
-    int length = snprintf(NULL, 0, "r%d", temp_counter);
-    char* name = malloc(length + 1);
-    if (!name) return NULL;
-    sprintf(name, "r%d", temp_counter++);
-    return name;
+    if (strcmp(op, "+") == 0) return OP_ADD;
+    if (strcmp(op, "-") == 0) return OP_SUB;
+    if (strcmp(op, "*") == 0) return OP_MULT;
+    if (strcmp(op, "/") == 0) return OP_DIV;
+    if (strcmp(op, "==") == 0) return OP_CMP_EQ;
+    if (strcmp(op, "!=") == 0) return OP_CMP_NE;
+    if (strcmp(op, "<") == 0) return OP_CMP_LT;
+    if (strcmp(op, ">") == 0) return OP_CMP_GT;
+    if (strcmp(op, "<=") == 0) return OP_CMP_LE;
+    if (strcmp(op, ">=") == 0) return OP_CMP_GE;
+    if (strcmp(op, "&") == 0) return OP_AND;
+    if (strcmp(op, "|") == 0) return OP_OR;
+    return OP_INVALID;
 }
 
-char* label_new(void)
-{
-    int length = snprintf(NULL, 0, "l%d", label_counter);
-    char* name = malloc(length + 1);
-    if (!name) return NULL;
-    sprintf(name, "l%d", label_counter++);
-    return name;
-}
-
-const char* op_to_iloc(const char* op)
-{
-    if (strcmp(op, "+") == 0) return "add";
-    if (strcmp(op, "-") == 0) return "sub";
-    if (strcmp(op, "*") == 0) return "mult";
-    if (strcmp(op, "/") == 0) return "div";
-    if (strcmp(op, "%") == 0) return "mod";
-    if (strcmp(op, "==") == 0) return "cmp_EQ";
-    if (strcmp(op, "!=") == 0) return "cmp_NE";
-    if (strcmp(op, "<") == 0) return "cmp_LT";
-    if (strcmp(op, ">") == 0) return "cmp_GT";
-    if (strcmp(op, "<=") == 0) return "cmp_LE";
-    if (strcmp(op, ">=") == 0) return "cmp_GE";
-    if (strcmp(op, "&") == 0) return "and";
-    if (strcmp(op, "|") == 0) return "or";
-    return NULL;
-}
-
-iloc_op_t* iloc_op_new(const char* opcode, const char* op1, const char* op2, const char* op3)
+iloc_op_t* iloc_op_new(opcode_t opcode, int op1, int op2, int op3)
 {
     iloc_op_t* op = malloc(sizeof(iloc_op_t));
     if (!op) {
         return NULL;
     }
-    op->opcode = opcode ? strdup(opcode) : NULL;
-    op->operand1 = op1 ? strdup(op1) : NULL;
-    op->operand2 = op2 ? strdup(op2) : NULL;
-    op->operand3 = op3 ? strdup(op3) : NULL;
+
+    op->opcode = opcode;
+    op->operand1 = op1;
+    op->operand2 = op2;
+    op->operand3 = op3;
     op->next = NULL;
 
     return op;
@@ -63,11 +49,37 @@ void iloc_op_free(iloc_op_t* op)
     if (!op) {
         return;
     }
-    free(op->opcode);
-    free(op->operand1);
-    free(op->operand2);
-    free(op->operand3);
     free(op);
+}
+
+void print_iloc_op(const iloc_op_t* op)
+{
+    if (op == NULL) {
+        printf("NULL instruction\n");
+        return;
+    }
+
+    const iloc_opcode_format_t* fmt = &opcode_formats[op->opcode];
+    switch (fmt->param_count) {
+        case 0:
+            printf("%s\n", fmt->format);
+            break;
+        case 1:
+            printf(fmt->format, op->operand1);
+            printf("\n");
+            break;
+        case 2:
+            printf(fmt->format, op->operand1, op->operand2);
+            printf("\n");
+            break;
+        case 3:
+            printf(fmt->format, op->operand1, op->operand2, op->operand3);
+            printf("\n");
+            break;
+        default:
+            printf("Invalid param_count %d for opcode %d\n", fmt->param_count, op->opcode);
+            break;
+    }
 }
 
 iloc_op_list_t* iloc_op_list_new(void)
@@ -136,7 +148,7 @@ iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* r
     return left_list;
 }
 
-void print_iloc_list_debug(const iloc_op_list_t* list)
+void print_iloc_list(const iloc_op_list_t* list)
 {
     if (list == NULL) {
         printf("ILOC list is NULL\n");
@@ -144,13 +156,8 @@ void print_iloc_list_debug(const iloc_op_list_t* list)
     }
 
     iloc_op_t* current = list->head;
-    int index = 0;
     while (current != NULL) {
-        printf("Instruction %d:\n", index++);
-        printf("  opcode:   %s\n", current->opcode ? current->opcode : "(null)");
-        printf("  operand1: %s\n", current->operand1 ? current->operand1 : "(null)");
-        printf("  operand2: %s\n", current->operand2 ? current->operand2 : "(null)");
-        printf("  operand3: %s\n", current->operand3 ? current->operand3 : "(null)");
+        print_iloc_op(current);
         current = current->next;
     }
 }

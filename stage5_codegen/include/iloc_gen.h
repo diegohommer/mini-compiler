@@ -7,15 +7,84 @@
 #define ILOC_GEN_H
 
 /**
+ * @enum opcode_t
+ * @brief Enumeration of all supported ILOC opcodes.
+ *
+ * Each opcode corresponds to a specific ILOC instruction,
+ * representing arithmetic, logical, control flow, and memory operations.
+ */
+typedef enum {
+    OP_NOP,    /**< nop */
+    OP_ADD,    /**< add r1, r2 => r3 */
+    OP_SUB,    /**< sub r1, r2 => r3 */
+    OP_MULT,   /**< mult r1, r2 => r3 */
+    OP_DIV,    /**< div r1, r2 => r3 */
+    OP_MULTI,  /**< multI r1, c2 => r3 */
+    OP_AND,    /**< and r1, r2 => r3 */
+    OP_OR,     /**< or r1, r2 => r3 */
+    OP_XORI,   /**< xorI r1, r2 => r3 */
+    OP_LOADI,  /**< loadI c1 => r2 */
+    OP_STORE,  /**< store r1 => r2 */
+    OP_JUMPI,  /**< jumpI -> l1 */
+    OP_CBR,    /**< cbr r1 -> l2, l3 */
+    OP_CMP_LT, /**< cmp_LT r1, r2 -> r3 */
+    OP_CMP_LE, /**< cmp_LE r1, r2 -> r3 */
+    OP_CMP_EQ, /**< cmp_EQ r1, r2 -> r3 */
+    OP_CMP_GE, /**< cmp_GE r1, r2 -> r3 */
+    OP_CMP_GT, /**< cmp_GT r1, r2 -> r3 */
+    OP_CMP_NE, /**< cmp_NE r1, r2 -> r3 */
+    OP_INVALID,
+} opcode_t;
+
+/**
+ * @brief Represents an ILOC opcode format and its parameter count.
+ */
+typedef struct {
+    const char* format; /**< printf-style format string */
+    int param_count;    /**< number of operands expected */
+} iloc_opcode_format_t;
+
+/**
+ * @brief Format strings and parameter counts for ILOC instructions.
+ *
+ * Indexed by `opcode_t`.
+ * Operand placeholders:
+ *  - `r%d` for registers,
+ *  - `l%d` for labels,
+ *  - `%d` for immediate constants.
+ */
+static const iloc_opcode_format_t opcode_formats[] = {
+    [OP_NOP] = {"nop", 0},
+    [OP_ADD] = {"add r%d, r%d => r%d", 3},
+    [OP_SUB] = {"sub r%d, r%d => r%d", 3},
+    [OP_MULT] = {"mult r%d, r%d => r%d", 3},
+    [OP_DIV] = {"div r%d, r%d => r%d", 3},
+    [OP_MULTI] = {"multI r%d, %d => r%d", 3},
+    [OP_AND] = {"and r%d, r%d => r%d", 3},
+    [OP_OR] = {"or r%d, r%d => r%d", 3},
+    [OP_XORI] = {"xorI r%d, %d => r%d", 3},
+    [OP_LOADI] = {"loadI %d => r%d", 2},
+    [OP_STORE] = {"store r%d => r%d", 2},
+    [OP_JUMPI] = {"jumpI -> l%d", 1},
+    [OP_CBR] = {"cbr r%d -> l%d, l%d", 3},
+    [OP_CMP_LT] = {"cmp_LT r%d, r%d -> r%d", 3},
+    [OP_CMP_LE] = {"cmp_LE r%d, r%d -> r%d", 3},
+    [OP_CMP_EQ] = {"cmp_EQ r%d, r%d -> r%d", 3},
+    [OP_CMP_GE] = {"cmp_GE r%d, r%d -> r%d", 3},
+    [OP_CMP_GT] = {"cmp_GT r%d, r%d -> r%d", 3},
+    [OP_CMP_NE] = {"cmp_NE r%d, r%d -> r%d", 3},
+};
+
+/**
  * @struct iloc_op_t
- * @brief Represents an ILOC instruction with an opcode and up to three operands/parameters.
+ * @brief Represents an ILOC instruction with an opcode and up to three operand IDs.
  */
 typedef struct iloc_op_t {
-    char* opcode;            /**< Operation code (e.g., "add", "load", "cbr") */
-    char* operand1;          /**< First operand (register, label, constant, etc.) */
-    char* operand2;          /**< Second operand (or empty, depending on the instruction) */
-    char* operand3;          /**< Third operand (or empty, depending on the instruction) */
-    struct iloc_op_t* next;  // pointer to next instruction
+    opcode_t opcode; /**< Operation code (e.g., add, load, cbr) */
+    int operand1;    /**< ID of the first operand (optional, depending on the instruction) */
+    int operand2;    /**< ID of the second operand (optional, depending on the instruction) */
+    int operand3;    /**< ID of the third operand (optional, depending on the instruction) */
+    struct iloc_op_t* next; /**< Pointer to the next instruction in the list */
 } iloc_op_t;
 
 /**
@@ -29,53 +98,60 @@ typedef struct {
 } iloc_op_list_t;
 
 /**
- * @brief Creates a new unique label name in the format "lX",
- * where X is an incrementing number.
- * @return Dynamically allocated label string (must be freed).
+ * @brief Generates a new unique label ID.
+ * @return Label ID (integer).
  */
-char* label_new(void);
+int label_new(void);
 
 /**
- * @brief Creates a new unique temporary name in the format "rX",
- * where X is an incrementing number.
- * @return Dynamically allocated temp string (must be freed).
+ * @brief Generates a new unique temporary ID.
+ * @return Temporary ID (integer).
  */
-char* temp_new(void);
+int temp_new(void);
 
 /**
  * @brief Maps a high-level operator string to its corresponding ILOC opcode.
  *
- * This function returns the appropriate ILOC opcode for a given operator,
- * to be used during code generation.
+ * Converts a high-level operator (e.g., "+", "-", "*", "/") into the corresponding
+ * internal ILOC opcode used for code generation.
  *
- * @param op A null-terminated string representing a high-level operator.
- * @return A pointer to a constant string representing the ILOC opcode,
- *         or NULL if the operator is not recognized.
+ * @param op A null-terminated string representing the high-level operator.
+ * @return The corresponding ILOC opcode as an opcode_t value,
+ *         or -1 (or another sentinel value) if the operator is not recognized.
  */
-const char* op_to_iloc(const char* op);
+opcode_t operator_to_opcode(const char* op);
 
 /**
  * @brief Creates a new ILOC operation.
  *
- * Allocates and initializes an ILOC operation with the given opcode and operands.
- * All strings are duplicated internally.
+ * Allocates and initializes an ILOC operation with the given opcode and operand IDs.
  *
- * @param opcode  The operation code (e.g., "add", "load", "cbr").
- * @param op1     First operand (register, label, constant, etc.), or NULL.
- * @param op2     Second operand, or NULL.
- * @param op3     Third operand, or NULL.
+ * @param opcode  The operation code (e.g., ADD, LOAD, CBR) as an opcode_t value.
+ * @param op1     ID of the first operand (register, label, constant).
+ * @param op2     ID of the second operand (register, label, constant).
+ * @param op3     ID of the third operand (register, label, constant).
  * @return Pointer to a newly allocated iloc_op_t structure, or NULL on failure.
  */
-iloc_op_t* iloc_op_new(const char* opcode, const char* op1, const char* op2, const char* op3);
+iloc_op_t* iloc_op_new(opcode_t opcode, int op1, int op2, int op3);
 
 /**
  * @brief Frees an ILOC operation.
  *
- * Releases all memory associated with the given instruction, including duplicated strings.
+ * Releases all memory associated with the given instruction.
  *
  * @param op Pointer to the iloc_op_t structure to free.
  */
 void iloc_op_free(iloc_op_t* op);
+
+/**
+ * @brief Prints a single ILOC instruction formatted according to its opcode.
+ *
+ * This function uses the opcode's format string and the operands from the
+ * iloc_op_t to print the instruction in human-readable form.
+ *
+ * @param op Pointer to the ILOC operation to print.
+ */
+void print_iloc_op(const iloc_op_t* op);
 
 /**
  * @brief Creates a new ILOC operation list.
@@ -92,7 +168,8 @@ iloc_op_list_t* iloc_op_list_new(void);
  * This function iterates over the linked list of ILOC operations, frees each operation,
  * and then frees the list container. After this call, the list pointer should not be used.
  *
- * @param list Pointer to the ILOC operation list to be freed. If NULL, the function does nothing.
+ * @param list Pointer to the ILOC operation list to be freed. If NULL, the function does
+ * nothing.
  */
 void iloc_op_list_free(iloc_op_list_t* list);
 
@@ -120,14 +197,18 @@ void iloc_op_list_add_op(iloc_op_list_t* list, iloc_op_t* op);
 iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* right_list);
 
 /**
- * @brief Prints all ILOC instructions in the list for debugging purposes.
+ * @brief Prints all ILOC instructions in the list as formatted code.
  *
- * This function iterates over the linked list of ILOC operations
- * and prints the opcode and operands of each instruction.
- * It is intended as a simple debug helper and does not format output.
+ * This function iterates over the linked list of ILOC operations,
+ * formats each instruction according to its opcode and operands,
+ * and outputs them line-by-line, appending a newline after each.
  *
- * @param list Pointer to the ILOC operation list to print. If NULL, prints a message.
+ * The output corresponds to the final ILOC code representation,
+ * suitable for debugging or emitting to a file.
+ *
+ * @param list Pointer to the ILOC operation list to print.
+ *             If NULL or empty, no output is produced.
  */
-void print_iloc_list_debug(const iloc_op_list_t* list);
+void print_iloc_list(const iloc_op_list_t* list);
 
 #endif  // ILOC_GEN_H
