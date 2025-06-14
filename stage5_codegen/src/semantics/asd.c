@@ -20,7 +20,7 @@ asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payloa
         ret->number_of_children = 0;
         ret->children = NULL;
         ret->code = NULL;
-        ret->temp = NULL;
+        ret->temp = 0;
 
         if (payload != NULL) {
             lexical_value_t *local_copy = malloc(sizeof(lexical_value_t));
@@ -59,7 +59,6 @@ void asd_free(asd_tree_t *tree)
             free(tree->lexical_payload->value);
         }
         free(tree->lexical_payload);
-        free(tree->temp);
         free(tree);
     } else {
         printf("Error: %s received parameter tree = %p.\n", __FUNCTION__, tree);
