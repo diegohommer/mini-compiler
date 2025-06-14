@@ -45,7 +45,7 @@ typedef struct asd_tree {
 
     lexical_value_t *lexical_payload; /**< Associated lexical information, if any */
     iloc_op_list_t *code;             /**< List with ILOC code generated for this node */
-    char *temp;                       /**< Temporary register name where the result is stored */
+    int temp;                         /**< Temporary register ID where the result is stored */
 } asd_tree_t;
 
 /**
@@ -80,27 +80,6 @@ void asd_free(asd_tree_t *tree);
  * @param child Pointer to the child node to add.
  */
 void asd_add_child(asd_tree_t *tree, asd_tree_t *child);
-
-/**
- * @brief Sets the ILOC code list for the current AST node.
- *
- * Associates a list of ILOC operations with the node, typically representing
- * the intermediate code generated during translation.
- *
- * @param tree Pointer to the AST node.
- * @param code Pointer to the ILOC operation list to associate with the node.
- */
-void asd_set_code(asd_tree_t *tree, iloc_op_list_t *code);
-
-/**
- * @brief Sets the temporary register name where the node’s result is stored.
- *
- * Assigns a string representing the temporary used to store the result of evaluating this node.
- *
- * @param tree Pointer to the AST node.
- * @param temp Pointer to a string containing the temporary register name (e.g., "r1", "r2").
- */
-void asd_set_temp(asd_tree_t *tree, char *temp);
 
 /**
  * @brief Recursively prints the AST in a readable, indented format.
