@@ -1,47 +1,47 @@
 %code requires {
-  /*
-   * Developed by: Diego Hommerding Amorim - 00341793
-   *           Gabriel Kenji Yatsuda Ikuta - 00337491
-   */
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
+    /*
+    * Developed by: Diego Hommerding Amorim - 00341793
+    *           Gabriel Kenji Yatsuda Ikuta - 00337491
+    */
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
 
-  #include "type_infer.h"
+    #include "type_infer.h"
 
-  typedef struct arg {
-      int count;
-      asd_tree_t* args;
-  } arg_t;
+    typedef struct arg {
+        int count;
+        asd_tree_t* args;
+    } arg_t;
 }
 
 %code {
-  int yylex(void);
-  void yyerror (char const *mensagem);
-  asd_tree_t* make_unary_exp_tree(const char* op_token, asd_tree_t* operand);
-  asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op_token, asd_tree_t* right);
-  asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
-  arg_t* create_arg(asd_tree_t* args, int count);
-  type_t get_token_type(lexical_value_t* lexical_value);
-  void free_lex_value(lexical_value_t* lexical_value);
+    int yylex(void);
+    void yyerror (char const *mensagem);
+    asd_tree_t* make_unary_exp_tree(const char* op_token, asd_tree_t* operand);
+    asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op_token, asd_tree_t* right);
+    asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail);
+    arg_t* create_arg(asd_tree_t* args, int count);
+    type_t get_token_type(lexical_value_t* lexical_value);
+    void free_lex_value(lexical_value_t* lexical_value);
 
-  extern int get_line_number(void);
-  extern asd_tree_t *tree;
-  extern scope_stack_t *scope_stack;
+    extern int get_line_number(void);
+    extern asd_tree_t *tree;
+    extern scope_stack_t *scope_stack;
 }
 
 %union {
-  char* str;
-  type_t type;
-  asd_tree_t* tree;
-  lexical_value_t* lexical_value;
-  arg_t* args;
+    char* str;
+    type_t type;
+    asd_tree_t* tree;
+    lexical_value_t* lexical_value;
+    arg_t* args;
 }
 
 %destructor {
-  if ($$ != NULL && $$ != tree) {
-    asd_free($$);
-  }
+    if ($$ != NULL && $$ != tree) {
+        asd_free($$);
+    }
 } <tree>;
 
 %token TK_PR_AS
@@ -295,12 +295,13 @@ literal: TK_LI_INT {
             $$ = asd_new($1->value, INT, $1, 0);
 
             // Generate ILOC code: loadI <value> => <temp>
-            char* temp = temp_new();
+            int temp = temp_new();
             iloc_op_list_t* code = iloc_op_list_new();
-            iloc_op_t* iloc_op = iloc_op_new("loadI", $1->value, temp, NULL);
+            iloc_op_t* iloc_op = iloc_op_new(OP_LOADI, atoi($1->value), temp, UNUSED_OPERAND);
             iloc_op_list_add_op(code, iloc_op);
-            asd_set_code($$, code);
-            asd_set_temp($$, temp);
+
+            $$->code = code;
+            $$->temp = temp;
 
             free_lex_value($1);
         }
@@ -318,61 +319,74 @@ destroy_scope: %empty { scope_pop(scope_stack); };
 %%
 
 void yyerror(const char *message){
-  fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
+    fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
 }
 
 asd_tree_t* make_unary_exp_tree(const char* op_token, asd_tree_t* operand)
 {
     // Create AST node
-    asd_tree_t* tree = asd_new(op_token, operand->data_type, operand->lexical_payload, 1, operand);
+    asd_tree_t* tree = asd_new(
+        op_token, operand->data_type, operand->lexical_payload, 1, operand
+    );
 
     // Generate ILOC code for the expression
-    char* temp = temp_new();
+    int temp = 0;
     iloc_op_list_t* code = operand->code;
     iloc_op_t* op = NULL;
 
     if (strcmp(op_token, "-") == 0) {
-        op = iloc_op_new("multI", operand->temp, "-1", temp);
+        temp = temp_new();
+        op = iloc_op_new(OP_MULTI, operand->temp, -1, temp);
+        iloc_op_list_add_op(code, op);
     } else if (strcmp(op_token, "+") == 0) {
-        op = iloc_op_new("i2i", operand->temp, temp, NULL);
+        temp = operand->temp;
     } else if (strcmp(op_token, "!") == 0) {
-        op = iloc_op_new("xorI", operand->temp, "1", temp);
+        temp = temp_new();
+        op = iloc_op_new(OP_XORI, operand->temp, -1, temp);
+        iloc_op_list_add_op(code, op);
     }
 
-    iloc_op_list_add_op(code, op);
-    asd_set_code(tree, code);
-    asd_set_temp(tree, temp);
+    tree->code = code;
+    tree->temp = temp;
 
     return tree;
 }
 
 asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op_token, asd_tree_t* right)
 {
-  // Create AST Node with inferred expression type
-  type_t exp_type = infer_exp_type(scope_stack, op_token, left, right);
-  asd_tree_t* tree = asd_new(op_token, exp_type, left->lexical_payload, 2, left, right);
+    // Create AST Node with inferred expression type
+    type_t exp_type = infer_exp_type(scope_stack, op_token, left, right);
+    asd_tree_t* tree = asd_new(op_token, exp_type, left->lexical_payload, 2, left, right);
 
-  // Generate ILOC code for the expression
-  char* temp = temp_new();
-  const char* opcode = op_to_iloc(op_token);
-  iloc_op_t* op = iloc_op_new(opcode, left->temp, right->temp, temp);
-  iloc_op_list_t* code = iloc_op_list_concat(left->code, right->code);
-  iloc_op_list_add_op(code, op);
-  asd_set_code(tree, code);
-  asd_set_temp(tree, temp);
+    // Generate ILOC code for the expression
+    int temp = 0;
+    opcode_t opcode = operator_to_opcode(op_token);
+    iloc_op_list_t* code = iloc_op_list_concat(left->code, right->code);
 
-  print_iloc_list_debug(tree->code);
+    if (opcode != OP_INVALID){
+        temp = temp_new();
+        iloc_op_t* op = iloc_op_new(opcode, left->temp, right->temp, temp);
+        iloc_op_list_add_op(code, op);
+    }else {
+        temp = left->temp;
+    }
 
-  return tree;
+    tree->code = code;
+    tree->temp = temp;
+
+    print_iloc_list(tree->code);
+    printf("\n");
+
+    return tree;
 }
 
 asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail) {
-  if(head == NULL){
-    return tail;
-  }else {
-    if(tail != NULL) asd_add_child(head, tail);
-    return head;
-  }
+    if(head == NULL){
+        return tail;
+    }else {
+        if(tail != NULL) asd_add_child(head, tail);
+        return head;
+    }
 }
 
 arg_t* create_arg(asd_tree_t* args, int count) {
@@ -383,6 +397,6 @@ arg_t* create_arg(asd_tree_t* args, int count) {
 }
 
 void free_lex_value(lexical_value_t* lexical_value) {
-  free(lexical_value->value);
-  free(lexical_value);
+    free(lexical_value->value);
+    free(lexical_value);
 }
