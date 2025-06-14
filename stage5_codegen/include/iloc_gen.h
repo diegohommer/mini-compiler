@@ -6,6 +6,8 @@
 #ifndef ILOC_GEN_H
 #define ILOC_GEN_H
 
+#define UNUSED_OPERAND 0
+
 /**
  * @enum opcode_t
  * @brief Enumeration of all supported ILOC opcodes.
@@ -54,6 +56,7 @@ typedef struct {
  *  - `%d` for immediate constants.
  */
 static const iloc_opcode_format_t opcode_formats[] = {
+    [OP_INVALID] = {"invalid", 0},
     [OP_NOP] = {"nop", 0},
     [OP_ADD] = {"add r%d, r%d => r%d", 3},
     [OP_SUB] = {"sub r%d, r%d => r%d", 3},
