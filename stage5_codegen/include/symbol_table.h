@@ -35,6 +35,7 @@ typedef struct {
     type_t type;                /**< Symbol data type */
     parameters_t* params;       /**< Function parameters, or NULL if not a function */
     lexical_value_t* lex_value; /**< Lexical value with identifier and position info */
+    int offset;                 /**< Memory offset: relative to rfp (locals) or rbss (globals) */
 } symbol_t;
 
 /**
@@ -84,7 +85,7 @@ symbol_t* table_get_symbol(symbol_table_t* table, const char* label);
 /**
  * @brief Creates a new symbol with a deep copy of the lexical value.
  *
- * Initializes the parameter list to NULL.
+ * Initializes the parameter list to NULL and offset to 0.
  *
  * @param kind The kind of symbol (IDENTIFIER, LITERAL, FUNCTION).
  * @param type The data type of the symbol.

@@ -85,6 +85,7 @@ symbol_t* symbol_new(kind_t kind, type_t type, lexical_value_t* lex_value)
         local_copy->value = strdup(lex_value->value);
         local_copy->line = lex_value->line;
         symbol->lex_value = local_copy;
+        symbol->offset = 0;
     }
     return symbol;
 }
