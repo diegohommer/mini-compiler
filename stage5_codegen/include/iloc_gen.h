@@ -34,6 +34,16 @@ void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int var
  */
 void iloc_gen_load(asd_tree_t* output, int var_offset, int var_level);
 
+/**
+ * @brief Generates ILOC code for a while loop structure.
+ *
+ * @param output            Pointer to the AST node to which the generated
+ *                          ILOC code will be appended.
+ * @param exp        The expression node representing the loop condition.
+ * @param cmd_block  The command block node representing the loop body.
+ */
+void iloc_gen_while(asd_tree_t* output, asd_tree_t* exp, asd_tree_t* cmd_block);
+
 
 /**
  * @brief Generates ILOC code for a unary expression and appends the instructions
