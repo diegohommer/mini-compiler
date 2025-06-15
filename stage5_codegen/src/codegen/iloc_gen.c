@@ -6,13 +6,13 @@
 #include "asd.h"
 #include "iloc_ir.h"
 
-void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int num_scope_tables)
+void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int var_level)
 {
     // Store variable: mem[offset] = src_temp (in RFP or RBSS)
     iloc_op_list_t* code = iloc_op_list_new();
     iloc_op_t* iloc_op = NULL;
 
-    if (num_scope_tables == 1) {
+    if (var_level == 0) {
         // Global scope: use RBSS
         iloc_op = iloc_op_new(OP_STOREAI, exp->temp, RBSS_ID, var_offset);
     } else {

@@ -17,11 +17,10 @@
  * @param exp               Pointer to the AST node representing the value
  *                          to be stored (expression or literal).
  * @param var_offset        Memory offset of the variable within the stack frame.
- * @param num_scope_tables  Number of active scope tables in the scope stack.
- *                          Used to determine if the variable is global (RBSS)
+ * @param var_level         Used to determine if the variable is global (RBSS)
  *                          or local (RFP).
  */
-void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int num_scope_tables);
+void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int var_level);
 
 /**
  * @brief Generates ILOC code for a unary expression and appends the instructions
