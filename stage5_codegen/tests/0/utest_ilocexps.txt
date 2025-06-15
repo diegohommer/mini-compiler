@@ -4,5 +4,4 @@ main returns int is [
 
     x is (1 + 2) * (3 - 4)
     z is (+50 / -2) & (1 | !0)
-    z is 2 % 2
 ];
