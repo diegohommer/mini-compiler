@@ -21,6 +21,7 @@ asd_tree_t *asd_new(const char *label, type_t data_type, lexical_value_t *payloa
         ret->children = NULL;
         ret->code = NULL;
         ret->temp = 0;
+        ret->iloc_label = 0;
 
         if (payload != NULL) {
             lexical_value_t *local_copy = malloc(sizeof(lexical_value_t));

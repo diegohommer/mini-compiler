@@ -46,6 +46,7 @@ typedef struct asd_tree {
     lexical_value_t *lexical_payload; /**< Associated lexical information, if any */
     iloc_op_list_t *code;             /**< List with ILOC code generated for this node */
     int temp;                         /**< Temporary register ID where the result is stored */
+    int iloc_label; /**< Label ID for control flow (e.g., loops, branches) in ILOC code. */
 } asd_tree_t;
 
 /**
