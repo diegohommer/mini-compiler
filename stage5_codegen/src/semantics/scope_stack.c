@@ -79,12 +79,12 @@ symbol_t* scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
     if (symbol->kind == IDENTIFIER) {
         if (stack->num_tables == 1) {
             // Global variable -> .bss segment
-            stack->rbss += INT_SIZE;
             symbol->offset = stack->rbss;
+            stack->rbss += INT_SIZE;
         } else {
             // Local variable -> relative to frame pointer
-            stack->rfp += INT_SIZE;
             symbol->offset = stack->rfp;
+            stack->rfp += INT_SIZE;
         }
     }
 
