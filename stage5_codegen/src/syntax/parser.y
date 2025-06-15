@@ -298,7 +298,10 @@ else_cmd
 /* REPETITION - Defines a while-loop structure */
 while_cmd
     : TK_PR_WHILE '(' exp ')' cmd_block
-        { $$ = asd_new("while", $3->data_type, $3->lexical_payload, 2, $3, $5); }
+        {
+            $$ = asd_new("while", $3->data_type, $3->lexical_payload, 2, $3, $5);
+            iloc_gen_while($$, $3, $5);
+        }
     ;
 
 
