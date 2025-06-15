@@ -116,6 +116,9 @@ def_func
                 asd_add_child($$, $5);
                 $$->code = $5->code;
             }
+
+            // Reset rfp after leaving functions local scope
+            scope_stack->rfp = 0;
         }
     ;
 
@@ -370,6 +373,7 @@ n0
             symbol_t* var_decl = scope_get_symbol(scope_stack, $1->value, $1->line);
             int var_type = infer_var_type(scope_stack, $1, var_decl);
             $$ = asd_new($1->value, var_type, $1, 0);
+            iloc_gen_load($$, var_decl->offset, var_decl->level);
             free_lex_value($1);
         }
     ;
