@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "errors.h"
+#include "symbol_table.h"
 
 type_t infer_initialization_type(scope_stack_t* scope_stack, lexical_value_t* var_id,
                                  type_t decl_type, type_t exp_type)
@@ -20,9 +21,9 @@ type_t infer_initialization_type(scope_stack_t* scope_stack, lexical_value_t* va
     return decl_type;
 }
 
-type_t infer_atribution_type(scope_stack_t* scope_stack, lexical_value_t* var_id, type_t exp_type)
+type_t infer_atribution_type(scope_stack_t* scope_stack, lexical_value_t* var_id,
+                             symbol_t* var_decl, type_t exp_type)
 {
-    symbol_t* var_decl = scope_get_symbol(scope_stack, var_id->value, var_id->line);
     if (var_decl->kind != IDENTIFIER) {
         display_function_error(var_id->value, var_id->line, var_decl->lex_value->line);
         CLEAN_EXIT(scope_stack, ERR_FUNCTION);

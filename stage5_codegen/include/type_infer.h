@@ -7,6 +7,7 @@
 #define TYPE_INFER_H
 
 #include "scope_stack.h"
+#include "symbol_table.h"
 
 /**
  * @brief Infers and validates the type of a variable initialization.
@@ -33,6 +34,7 @@ type_t infer_initialization_type(scope_stack_t* scope_stack, lexical_value_t* va
  *
  * @param scope_stack Pointer to the scope stack for symbol lookup.
  * @param var_id      Lexical value of the variable receiving the assignment.
+ * @param var_decl    Pointer to the symbol representing the declared variable.
  * @param exp_type    Type of the expression being assigned to the variable.
  * @return The expression type if the assignment is valid.
  *
@@ -40,7 +42,8 @@ type_t infer_initialization_type(scope_stack_t* scope_stack, lexical_value_t* va
  * @note Exits with ERR_FUNCTION if the identifier refers to a function.
  * @note Exits with ERR_WRONG_TYPE if the assigned type does not match the declared type.
  */
-type_t infer_atribution_type(scope_stack_t* scope_stack, lexical_value_t* var_id, type_t exp_type);
+type_t infer_atribution_type(scope_stack_t* scope_stack, lexical_value_t* var_id,
+                             symbol_t* var_decl, type_t exp_type);
 
 /**
  * @brief Infers and validates the return type of a function call expression.
