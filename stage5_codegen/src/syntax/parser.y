@@ -211,7 +211,7 @@ var_init
 
             $$ = asd_new("with", var_type, $2, 2, asd_new($2->value, var_type, $2, 0), $6);
 
-            iloc_gen_store($$, $6->temp, var->offset, scope_stack->num_tables);
+            iloc_gen_store($$, $6, var->offset, scope_stack->num_tables);
             free_lex_value($2);
         }
     ;
@@ -225,7 +225,7 @@ atribution
             type_t var_type = infer_atribution_type(scope_stack, $1, decl_var, $3->data_type);
             $$ = asd_new("is", var_type, $1, 2, asd_new($1->value, var_type, $1, 0), $3);
 
-            iloc_gen_store($$, $3->temp, decl_var->offset, scope_stack->num_tables);
+            iloc_gen_store($$, $3, decl_var->offset, scope_stack->num_tables);
             free_lex_value($1);
         }
     ;
@@ -432,9 +432,6 @@ asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op_token, asd_tree_t* ri
     asd_tree_t* tree = asd_new(op_token, exp_type, left->lexical_payload, 2, left, right);
 
     iloc_gen_binary_exp(tree, left, op_token, right);
-
-    print_iloc_list(tree->code);
-    printf("\n");
 
     return tree;
 }
