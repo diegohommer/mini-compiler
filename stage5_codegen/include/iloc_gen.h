@@ -9,17 +9,19 @@
 #include "asd.h"
 
 /**
- * @brief Generates ILOC code to store the value of an atribution expression
- *        into a variable's memory location and appends the instructions to the provided AST node's
- * code list.
+ * @brief Generates ILOC code to store the value of an expression into a
+ *        variable's memory location.
  *
- * @param output           Pointer to the AST node where the generated code is appended.
- * @param src_temp         The temporary register holding the value to be stored.
- * @param var_offset       The memory offset of the variable in the stack frame.
- * @param num_scope_tables Number of scope tables in the current scope stack.
- *                         Determines whether the variable is global (RBSS) or local (RFP).
+ * @param output            Pointer to the AST node to which the generated
+ *                          ILOC code will be appended.
+ * @param exp               Pointer to the AST node representing the value
+ *                          to be stored (expression or literal).
+ * @param var_offset        Memory offset of the variable within the stack frame.
+ * @param num_scope_tables  Number of active scope tables in the scope stack.
+ *                          Used to determine if the variable is global (RBSS)
+ *                          or local (RFP).
  */
-void iloc_gen_store(asd_tree_t* output, int src_temp, int var_offset, int num_scope_tables);
+void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int num_scope_tables);
 
 /**
  * @brief Generates ILOC code for a unary expression and appends the instructions
