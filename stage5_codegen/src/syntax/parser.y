@@ -8,6 +8,7 @@
     #include <string.h>
 
     #include "type_infer.h"
+    #include "iloc_gen.h"
 
     typedef struct arg {
         int count;
@@ -31,7 +32,6 @@
 }
 
 %union {
-    char* str;
     type_t type;
     asd_tree_t* tree;
     lexical_value_t* lexical_value;
@@ -68,7 +68,6 @@
 %type <tree> prog_list element cmd_block func_cmd_block cmd_list
 %type <tree> simple_cmd atribution func_call return_cmd if_else_cmd else_cmd while_cmd
 %type <tree> exp n7 n6 n5 n4 n3 n2 n1 n0 prec0_ops literal
-%type <str> prec5_ops prec4_ops prec3_ops prec2_ops prec1_ops
 %type <args> call_args call_args_list
 %type <type> type
 
@@ -166,16 +165,22 @@ var_decl: TK_PR_DECLARE TK_ID TK_PR_AS type {
 // VARIABLE INITIALIZATION - Declares and initializes a variable with literal
 var_init: TK_PR_DECLARE TK_ID TK_PR_AS type TK_PR_WITH literal {
   type_t var_type = infer_initialization_type(scope_stack, $2, $4, $6->data_type);
-  scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, var_type, $2));
+  symbol_t* var = scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, var_type, $2));
+
   $$ = asd_new("with", var_type, $2, 2, asd_new($2->value, var_type, $2, 0), $6);
+
+  iloc_gen_store($$, $6->temp, var->offset, scope_stack->num_tables);
   free_lex_value($2);
 }
 
 
 // ATRIBUTION - Defines an atribution
 atribution: TK_ID TK_PR_IS exp {
-  type_t var_type = infer_atribution_type(scope_stack, $1, $3->data_type);
+  symbol_t* decl_var = scope_get_symbol(scope_stack, $1->value, $1->line);
+  type_t var_type = infer_atribution_type(scope_stack, $1, decl_var, $3->data_type);
   $$ = asd_new("is", var_type, $1, 2, asd_new($1->value, var_type, $1, 0), $3);
+
+  iloc_gen_store($$, $3->temp, decl_var->offset, scope_stack->num_tables);
   free_lex_value($1);
 };
 
@@ -231,148 +236,171 @@ while_cmd: TK_PR_WHILE '(' exp ')' cmd_block {
 
 
 
-// ===========================
-//        EXPRESSIONS
-// =========================== 
+/* ===========================
+ *          EXPRESSIONS
+ * =========================== */
 
-// EXPRESSION START
-exp: n7 { $$ = $1; };
+/* EXPRESSION START */
+exp
+    : n7
+        { $$ = $1; }
+    ;
 
-// PRECEDENCE 7 (LOWEST) - Bitwise OR
-n7: n7 '|' n6 { $$ = make_exp_tree($1, "|", $3);}
-  | n6 { $$ = $1; };
+/* PRECEDENCE 7 (LOWEST) - Bitwise OR */
+n7
+    : n7 '|' n6
+        { $$ = make_exp_tree($1, "|", $3); }
+    | n6
+        { $$ = $1; }
+    ;
 
-// PRECEDENCE 6 - Bitwise AND
-n6: n6 '&' n5 { $$ = make_exp_tree($1, "&", $3);}
-  | n5 { $$ = $1; };
+/* PRECEDENCE 6 - Bitwise AND */
+n6
+    : n6 '&' n5
+        { $$ = make_exp_tree($1, "&", $3); }
+    | n5
+        { $$ = $1; }
+    ;
 
-// PRECEDENCE 5 - Comparison (==, !=)
-prec5_ops: TK_OC_EQ { $$ = "=="; } 
-         | TK_OC_NE { $$ = "!="; };
-n5: n5 prec5_ops n4 { $$ = make_exp_tree($1, $2, $3); }
-  | n4 { $$ = $1; };
+/* PRECEDENCE 5 - Comparison (==, !=) */
+n5
+    : n5 TK_OC_EQ n4
+        { $$ = make_exp_tree($1, "==", $3); }
+    | n5 TK_OC_NE n4
+        { $$ = make_exp_tree($1, "!=", $3); }
+    | n4
+        { $$ = $1; }
+    ;
 
-// PRECEDENCE 4 - Comparison (<, >, <=, >=)
-prec4_ops: '<' { $$ = "<"; } 
-         | '>' { $$ = ">"; } 
-         | TK_OC_LE { $$ = "<="; } 
-         | TK_OC_GE { $$ = ">="; };
-n4: n4 prec4_ops n3 { $$ = make_exp_tree($1, $2, $3); }
-  | n3 { $$ = $1; };
+/* PRECEDENCE 4 - Comparison (<, >, <=, >=) */
+n4
+    : n4 '<' n3
+        { $$ = make_exp_tree($1, "<", $3); }
+    | n4 '>' n3
+        { $$ = make_exp_tree($1, ">", $3); }
+    | n4 TK_OC_LE n3
+        { $$ = make_exp_tree($1, "<=", $3); }
+    | n4 TK_OC_GE n3
+        { $$ = make_exp_tree($1, ">=", $3); }
+    | n3
+        { $$ = $1; }
+    ;
 
-// PRECEDENCE 3 - Addition & Subtraction (+, -)
-prec3_ops: '+' { $$ = "+"; } 
-         | '-' { $$ = "-"; };
-n3: n3 prec3_ops n2 { $$ = make_exp_tree($1, $2, $3); }
-  | n2 { $$ = $1; };
+/* PRECEDENCE 3 - Addition & Subtraction (+, -) */
+n3
+    : n3 '+' n2
+        { $$ = make_exp_tree($1, "+", $3); }
+    | n3 '-' n2
+        { $$ = make_exp_tree($1, "-", $3); }
+    | n2
+        { $$ = $1; }
+    ;
 
-// PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %)
-prec2_ops: '*' { $$ = "*"; } 
-         | '/' { $$ = "/"; } 
-         | '%' { $$ = "%"; };
-n2: n2 prec2_ops n1 { $$ = make_exp_tree($1, $2, $3); }
-  | n1 { $$ = $1; };
+/* PRECEDENCE 2 - Multiplication, Division, Modulo (*, /, %) */
+n2
+    : n2 '*' n1
+        { $$ = make_exp_tree($1, "*", $3); }
+    | n2 '/' n1
+        { $$ = make_exp_tree($1, "/", $3); }
+    | n2 '%' n1
+        { $$ = make_exp_tree($1, "%", $3); }
+    | n1
+        { $$ = $1; }
+    ;
 
-// PRECEDENCE 1 - Unary Operators (+, -, !)
-prec1_ops: '+' { $$ = "+"; } 
-         | '-' { $$ = "-"; } 
-         | '!' { $$ = "!"; };
-n1: prec1_ops n1 { $$ = make_unary_exp_tree($1, $2); }
-  | n0 { $$ = $1; };
+/* PRECEDENCE 1 - Unary Operators (+, -, !) */
+n1
+    : '+' n1
+        { $$ = make_unary_exp_tree("+", $2); }
+    | '-' n1
+        { $$ = make_unary_exp_tree("-", $2); }
+    | '!' n1
+        { $$ = make_unary_exp_tree("!", $2); }
+    | n0
+        { $$ = $1; }
+    ;
 
-// PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, () delimited exps. 
-prec0_ops: func_call { $$ = $1; } 
-         | TK_ID { $$ = asd_new($1->value, infer_var_type(scope_stack, $1), $1, 0); free_lex_value($1); }
-         | literal { $$ = $1; }
-         | '(' exp ')'{ $$ = $2; };
-n0: prec0_ops { $$ = $1; };
-
-// TYPE AND LITERAL TOKENS
-type: TK_PR_INT { $$ = INT; }
-    | TK_PR_FLOAT { $$ = FLOAT; };
-literal: TK_LI_INT {
-            // Create AST Node
-            $$ = asd_new($1->value, INT, $1, 0);
-
-            // Generate ILOC code: loadI <value> => <temp>
-            int temp = temp_new();
-            iloc_op_list_t* code = iloc_op_list_new();
-            iloc_op_t* iloc_op = iloc_op_new(OP_LOADI, atoi($1->value), temp, UNUSED_OPERAND);
-            iloc_op_list_add_op(code, iloc_op);
-
-            $$->code = code;
-            $$->temp = temp;
-
+/* PRECEDENCE 0 (HIGHEST) - FuncCalls, Ids, Literals, Parenthesized expressions */
+prec0_ops
+    : func_call
+        { $$ = $1; }
+    | TK_ID
+        {
+            int var_type = infer_var_type(scope_stack, $1);
+            $$ = asd_new($1->value, var_type, $1, 0);
             free_lex_value($1);
         }
-       | TK_LI_FLOAT { $$ = asd_new($1->value, FLOAT, $1, 0); free_lex_value($1); };
+    | literal
+        { $$ = $1; }
+    | '(' exp ')'
+        { $$ = $2; }
+    ;
+
+n0
+    : prec0_ops
+        { $$ = $1; }
+    ;
+
+/* TYPE AND LITERAL TOKENS */
+type
+    : TK_PR_INT
+        { $$ = INT; }
+    | TK_PR_FLOAT
+        { $$ = FLOAT; }
+    ;
+
+literal
+    : TK_LI_INT
+        {
+            $$ = asd_new($1->value, INT, $1, 0);
+            iloc_gen_literal($$, $1->value);
+            free_lex_value($1);
+        }
+    | TK_LI_FLOAT
+        {
+            $$ = asd_new($1->value, FLOAT, $1, 0);
+            free_lex_value($1);
+        }
+    ;
 
 
+/* ===========================
+ *       SYMBOL TABLES
+ * =========================== */
 
-// ===========================
-//       SYMBOL TABLES
-// ===========================
+/* SCOPE NON-TERMINALS - For creating and destroying symbol tables on a given scope */
+create_scope
+    : %empty
+        { scope_push(scope_stack); }
+    ;
 
-// SCOPE NON-TERMINALS - For creating and destroying symbol tables on a given scope
-create_scope: %empty { scope_push(scope_stack); };
-destroy_scope: %empty { scope_pop(scope_stack); };
+destroy_scope
+    : %empty
+        { scope_pop(scope_stack); }
+    ;
 %%
 
-void yyerror(const char *message){
+/* Error reporting function */
+void yyerror(const char *message)
+{
     fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
 }
 
+/* Create AST node for unary expressions */
 asd_tree_t* make_unary_exp_tree(const char* op_token, asd_tree_t* operand)
 {
-    // Create AST node
-    asd_tree_t* tree = asd_new(
-        op_token, operand->data_type, operand->lexical_payload, 1, operand
-    );
-
-    // Generate ILOC code for the expression
-    int temp = 0;
-    iloc_op_list_t* code = operand->code;
-    iloc_op_t* op = NULL;
-
-    if (strcmp(op_token, "-") == 0) {
-        temp = temp_new();
-        op = iloc_op_new(OP_MULTI, operand->temp, -1, temp);
-        iloc_op_list_add_op(code, op);
-    } else if (strcmp(op_token, "+") == 0) {
-        temp = operand->temp;
-    } else if (strcmp(op_token, "!") == 0) {
-        temp = temp_new();
-        op = iloc_op_new(OP_XORI, operand->temp, -1, temp);
-        iloc_op_list_add_op(code, op);
-    }
-
-    tree->code = code;
-    tree->temp = temp;
-
+    asd_tree_t* tree = asd_new(op_token, operand->data_type, operand->lexical_payload, 1, operand);
+    iloc_gen_unary_exp(tree, op_token, operand);
     return tree;
 }
 
+/* Create AST node for binary expressions */
 asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op_token, asd_tree_t* right)
 {
-    // Create AST Node with inferred expression type
     type_t exp_type = infer_exp_type(scope_stack, op_token, left, right);
     asd_tree_t* tree = asd_new(op_token, exp_type, left->lexical_payload, 2, left, right);
 
-    // Generate ILOC code for the expression
-    int temp = 0;
-    opcode_t opcode = operator_to_opcode(op_token);
-    iloc_op_list_t* code = iloc_op_list_concat(left->code, right->code);
-
-    if (opcode != OP_INVALID){
-        temp = temp_new();
-        iloc_op_t* op = iloc_op_new(opcode, left->temp, right->temp, temp);
-        iloc_op_list_add_op(code, op);
-    }else {
-        temp = left->temp;
-    }
-
-    tree->code = code;
-    tree->temp = temp;
+    iloc_gen_binary_exp(tree, left, op_token, right);
 
     print_iloc_list(tree->code);
     printf("\n");
@@ -380,23 +408,33 @@ asd_tree_t* make_exp_tree(asd_tree_t* left, const char* op_token, asd_tree_t* ri
     return tree;
 }
 
-asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail) {
-    if(head == NULL){
+/* Build list of AST nodes, concatenating code lists */
+asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail)
+{
+    if (head == NULL) {
         return tail;
-    }else {
-        if(tail != NULL) asd_add_child(head, tail);
+    } else {
+        if (tail != NULL) {
+            asd_add_child(head, tail);
+            iloc_op_list_concat(head->code, tail->code);
+        }
         return head;
     }
 }
 
-arg_t* create_arg(asd_tree_t* args, int count) {
+/* Create argument structure for function arguments */
+arg_t* create_arg(asd_tree_t* args, int count)
+{
     arg_t* arg = malloc(sizeof(arg_t));
     arg->count = count;
     arg->args = args;
     return arg;
 }
 
-void free_lex_value(lexical_value_t* lexical_value) {
+/* Free lexical value data */
+void free_lex_value(lexical_value_t* lexical_value)
+{
     free(lexical_value->value);
     free(lexical_value);
 }
+
