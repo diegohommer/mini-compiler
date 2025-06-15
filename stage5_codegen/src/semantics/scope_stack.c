@@ -86,6 +86,7 @@ symbol_t* scope_declare_symbol(scope_stack_t* stack, symbol_t* symbol)
             symbol->offset = stack->rfp;
             stack->rfp += INT_SIZE;
         }
+        symbol->level = stack->num_tables - 1;
     }
 
     return symbol;
