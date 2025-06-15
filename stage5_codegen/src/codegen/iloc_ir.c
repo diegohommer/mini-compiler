@@ -112,7 +112,6 @@ void print_iloc_op(const iloc_op_t* op)
         case OP_MULTI:
         case OP_XORI:
         case OP_LOADAI:
-        case OP_STOREAI:
             // opcode r1, c2 => r3
             iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
             iloc_reg_to_str(op->operand3, buf3, sizeof(buf3));
@@ -124,6 +123,12 @@ void print_iloc_op(const iloc_op_t* op)
             iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
             printf("%s %d => %s\n", opcode_names[op->opcode], op->operand1, buf2);
             break;
+
+        case OP_STOREAI:
+            // opcode r1 => r2, c3
+            iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
+            iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
+            printf("%s %s => %s, %d", opcode_names[op->opcode], buf1, buf2, op->operand3);
 
         case OP_JUMPI:
             // opcode -> l1
