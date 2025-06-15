@@ -124,12 +124,13 @@ type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* ex
  *
  * @param scope_stack    Current scope stack for semantic information.
  * @param var_id         Lexical value of the variable being used.
+ * @param var_decl    Pointer to the symbol representing the declared variable.
  *
  * @return The data type of the variable if valid.
  *
  * @note Exits with ERR_UNDECLARED if the identifier is not declared.
  * @note Exits with ERR_FUNCTION if the identifier is a function.
  */
-type_t infer_var_type(scope_stack_t* scope_stack, lexical_value_t* var_id);
+type_t infer_var_type(scope_stack_t* scope_stack, lexical_value_t* var_id, symbol_t* var_decl);
 
 #endif  // TYPE_INFER_H

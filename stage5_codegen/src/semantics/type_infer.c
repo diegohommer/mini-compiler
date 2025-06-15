@@ -134,10 +134,8 @@ type_t infer_exp_type(scope_stack_t* scope_stack, const char* op, asd_tree_t* tr
     return tree_left->data_type;
 }
 
-type_t infer_var_type(scope_stack_t* scope_stack, lexical_value_t* var_id)
+type_t infer_var_type(scope_stack_t* scope_stack, lexical_value_t* var_id, symbol_t* var_decl)
 {
-    symbol_t* var_decl = scope_get_symbol(scope_stack, var_id->value, var_id->line);
-
     if (var_decl->kind != IDENTIFIER) {
         display_function_error(var_id->value, var_id->line, var_decl->lex_value->line);
         CLEAN_EXIT(scope_stack, ERR_FUNCTION);

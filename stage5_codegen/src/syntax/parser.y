@@ -367,7 +367,8 @@ n0
     | '(' exp ')'  { $$ = $2; }
     | TK_ID
         {
-            int var_type = infer_var_type(scope_stack, $1);
+            symbol_t* var_decl = scope_get_symbol(scope_stack, $1->value, $1->line);
+            int var_type = infer_var_type(scope_stack, $1, var_decl);
             $$ = asd_new($1->value, var_type, $1, 0);
             free_lex_value($1);
         }
