@@ -23,6 +23,19 @@
 void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int var_level);
 
 /**
+ * @brief Generates ILOC code to load the value of a variable into a
+ *        temp register.
+ *
+ * @param output            Pointer to the AST node to which the generated
+ *                          ILOC code will be appended.
+ * @param var_offset        Memory offset of the variable within the stack frame.
+ * @param var_level         Used to determine if the variable is global (RBSS)
+ *                          or local (RFP).
+ */
+void iloc_gen_load(asd_tree_t* output, int var_offset, int var_level);
+
+
+/**
  * @brief Generates ILOC code for a unary expression and appends the instructions
  *        to the provided AST node's code list.
  *

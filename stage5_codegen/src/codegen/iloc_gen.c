@@ -24,6 +24,26 @@ void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int var
     output->code = iloc_op_list_concat(exp->code, code);
 }
 
+void iloc_gen_load(asd_tree_t* output, int var_offset, int var_level)
+{
+    // Load variable: temp = mem[offset] (in RFP or RBSS)
+    int temp = temp_new();
+    iloc_op_list_t* code = iloc_op_list_new();
+    iloc_op_t* iloc_op = NULL;
+
+    if (var_level == 0) {
+        // Global scope: use RBSS
+        iloc_op = iloc_op_new(OP_LOADAI, RBSS_ID, var_offset, temp);
+    } else {
+        // Local scope: use RFP
+        iloc_op = iloc_op_new(OP_LOADAI, RFP_ID, var_offset, temp);
+    }
+    iloc_op_list_add_op(code, iloc_op);
+
+    output->code = code;
+    output->temp = temp;
+}
+
 void iloc_gen_unary_exp(asd_tree_t* output, const char* op_token, asd_tree_t* operand)
 {
     int temp = 0;
