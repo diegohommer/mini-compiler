@@ -255,11 +255,12 @@ call_args
     ;
 
 call_args_list
-    : exp  { $$ = create_arg($1, 1); }
+    : exp  { $$ = create_arg($1, 1); iloc_op_list_free($1->code); }
     | exp ',' call_args_list 
         {
             asd_add_child($1, $3->args);
             $$ = create_arg($1, 1 + $3->count);
+            iloc_op_list_free($1->code);
             free($3);
         }
     ;
@@ -271,6 +272,7 @@ return_cmd
         {
             int return_type = infer_return_type(scope_stack, $2, $4);
             $$ = asd_new("return", return_type, $2->lexical_payload, 1, $2);
+            iloc_op_list_free($2->code);
         }
     ;
 
