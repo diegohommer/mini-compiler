@@ -128,7 +128,8 @@ void print_iloc_op(const iloc_op_t* op)
             // opcode r1 => r2, c3
             iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
             iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
-            printf("%s %s => %s, %d", opcode_names[op->opcode], buf1, buf2, op->operand3);
+            printf("%s %s => %s, %d\n", opcode_names[op->opcode], buf1, buf2, op->operand3);
+            break;
 
         case OP_JUMPI:
             // opcode -> l1
