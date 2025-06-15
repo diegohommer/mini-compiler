@@ -194,24 +194,28 @@ void iloc_op_list_free(iloc_op_list_t* list)
 
 void iloc_op_list_add_op(iloc_op_list_t* list, iloc_op_t* op)
 {
-    if (list->count == 0) {
-        list->head = op;
-        list->tail = op;
-    } else {
-        list->tail->next = op;
-        list->tail = op;
+    if (list) {
+        if (list->count == 0) {
+            list->head = op;
+            list->tail = op;
+        } else {
+            list->tail->next = op;
+            list->tail = op;
+        }
+        list->count++;
     }
-    list->count++;
 }
 
 iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* right_list)
 {
     if (!left_list || left_list->count == 0) {
         // Left empty or NULL — just return right
+        free(left_list);
         return right_list;
     }
     if (!right_list || right_list->count == 0) {
         // Right empty or NULL — just return left
+        free(right_list);
         return left_list;
     }
 
@@ -221,9 +225,7 @@ iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* r
     left_list->count += right_list->count;
 
     // Clear right list to avoid dangling pointers
-    right_list->head = NULL;
-    right_list->tail = NULL;
-    right_list->count = 0;
+    free(right_list);
 
     return left_list;
 }

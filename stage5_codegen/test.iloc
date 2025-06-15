@@ -1,0 +1,19 @@
+loadI 1 => r1
+loadI 2 => r2
+add r1, r2 => r3
+loadI 3 => r4
+loadI 4 => r5
+sub r4, r5 => r6
+mult r3, r6 => r7
+storeAI r7 => rfp, 4
+loadI 50 => r8
+loadI 2 => r9
+multI r9, -1 => r10
+div r8, r10 => r11
+loadI 1 => r12
+loadI 0 => r13
+xorI r13, -1 => r14
+or r12, r14 => r15
+and r11, r15 => r16
+storeAI r16 => rfp, 8
+

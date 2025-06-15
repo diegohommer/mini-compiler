@@ -114,7 +114,7 @@ def_func
             $$ = $1;
             if($5 != NULL) {
                 asd_add_child($$, $5);
-                iloc_op_list_concat($$->code, $5->code);
+                $$->code = $5->code;
             }
         }
     ;
@@ -152,7 +152,7 @@ param_def
 
 /* FUNCTION BODY - A block of commands */
 func_body
-    : func_cmd_block  { $$ = $1; print_iloc_list($$->code); }
+    : func_cmd_block  { $$ = $1; }
     ;
 
 

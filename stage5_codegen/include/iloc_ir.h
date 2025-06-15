@@ -170,14 +170,17 @@ void iloc_op_list_add_op(iloc_op_list_t* list, iloc_op_t* op);
 /**
  * @brief Concatenates two ILOC operation lists by appending the right list to the left.
  *
- * The left list will contain all operations after concatenation,
- * and the right list is cleared (head, tail set to NULL; count set to 0).
+ * This function appends all operations from @p right_list to @p left_list.
+ * The @p right_list container is freed after concatenation, but its operations
+ * are preserved within the resulting list.
  *
- * If the left list is NULL or empty, returns the right list.
- * If the right list is NULL or empty, returns the left list.
+ * - If @p left_list is NULL or empty, the function frees it and returns @p right_list.
+ * - If @p right_list is NULL or empty, the function frees it and returns @p left_list.
+ * - If both lists are non-empty, @p right_list is appended to @p left_list, and
+ *   the @p right_list container is freed.
  *
- * @param left_list  The list to which operations are appended.
- * @param right_list The list to append and then clear.
+ * @param left_list  The destination list to which operations are appended.
+ * @param right_list The source list whose operations are appended; its container is freed.
  * @return Pointer to the resulting concatenated list.
  */
 iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* right_list);
