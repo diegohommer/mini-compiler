@@ -36,6 +36,7 @@ typedef struct {
     parameters_t* params;       /**< Function parameters, or NULL if not a function */
     lexical_value_t* lex_value; /**< Lexical value with identifier and position info */
     int offset;                 /**< Memory offset: relative to rfp (locals) or rbss (globals) */
+    int level;                  /**< Scope level at which the variable was declared at */
 } symbol_t;
 
 /**
