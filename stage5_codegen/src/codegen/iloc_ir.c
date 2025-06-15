@@ -156,6 +156,10 @@ void print_iloc_op(const iloc_op_t* op)
             printf("%s %s, %s -> %s\n", opcode_names[op->opcode], buf1, buf2, buf3);
             break;
 
+        case OP_LABEL:
+            printf("l%d:\n", op->operand1);
+            break;
+
         default:
             printf("Unknown opcode %d\n", op->opcode);
             break;

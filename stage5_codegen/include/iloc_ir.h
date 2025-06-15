@@ -43,6 +43,7 @@ typedef enum {
     OP_CMP_GE,  /**< cmp_GE r1, r2 -> r3 */
     OP_CMP_GT,  /**< cmp_GT r1, r2 -> r3 */
     OP_CMP_NE,  /**< cmp_NE r1, r2 -> r3 */
+    OP_LABEL,   /**< l1: */
     OP_INVALID,
 } opcode_t;
 
