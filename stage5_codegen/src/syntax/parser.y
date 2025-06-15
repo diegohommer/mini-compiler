@@ -152,7 +152,7 @@ param_def
 
 /* FUNCTION BODY - A block of commands */
 func_body
-    : func_cmd_block  { $$ = $1; }
+    : func_cmd_block  { $$ = $1; print_iloc_list($$->code); }
     ;
 
 
@@ -208,10 +208,9 @@ var_init
         {
             type_t var_type = infer_initialization_type(scope_stack, $2, $4, $6->data_type);
             symbol_t* var = scope_declare_symbol(scope_stack, symbol_new(IDENTIFIER, var_type, $2));
-
             $$ = asd_new("with", var_type, $2, 2, asd_new($2->value, var_type, $2, 0), $6);
 
-            iloc_gen_store($$, $6, var->offset, scope_stack->num_tables);
+            iloc_gen_store($$, $6, var->offset, var->level);
             free_lex_value($2);
         }
     ;
@@ -225,7 +224,7 @@ atribution
             type_t var_type = infer_atribution_type(scope_stack, $1, decl_var, $3->data_type);
             $$ = asd_new("is", var_type, $1, 2, asd_new($1->value, var_type, $1, 0), $3);
 
-            iloc_gen_store($$, $3, decl_var->offset, scope_stack->num_tables);
+            iloc_gen_store($$, $3, decl_var->offset, decl_var->level);
             free_lex_value($1);
         }
     ;
