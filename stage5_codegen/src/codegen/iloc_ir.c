@@ -1,4 +1,4 @@
-#include "iloc_gen.h"
+#include "iloc_ir.h"
 
 #include <stdio.h>
 #include <stdlib.h>

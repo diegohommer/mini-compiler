@@ -9,7 +9,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "iloc_gen.h"
+#include "iloc_ir.h"
 
 /**
  * @enum type_t

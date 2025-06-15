@@ -3,8 +3,8 @@
  *           Gabriel Kenji Yatsuda Ikuta - 00337491
  */
 
-#ifndef ILOC_GEN_H
-#define ILOC_GEN_H
+#ifndef ILOC_IR_H
+#define ILOC_IR_H
 
 #include <stdio.h>
 
@@ -197,4 +197,4 @@ iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* r
  */
 void print_iloc_list(const iloc_op_list_t* list);
 
-#endif  // ILOC_GEN_H
+#endif  // ILOC_IR_H
