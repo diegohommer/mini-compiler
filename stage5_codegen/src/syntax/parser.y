@@ -286,6 +286,7 @@ if_else_cmd
         {
             int if_type = infer_if_type(scope_stack, $3->data_type, $5, $6);
             $$ = asd_new("if", if_type, $3->lexical_payload, 3, $3, $5, $6);
+            iloc_gen_if($$, $3, $5, $6);
         }
     ;
 
@@ -398,6 +399,7 @@ literal
     | TK_LI_FLOAT
         {
             $$ = asd_new($1->value, FLOAT, $1, 0);
+            iloc_gen_literal($$, $1->value);
             free_lex_value($1);
         }
     ;
@@ -453,7 +455,7 @@ asd_tree_t* build_list(asd_tree_t* head, asd_tree_t* tail)
     } else {
         if (tail != NULL) {
             asd_add_child(head, tail);
-            iloc_op_list_concat(head->code, tail->code);
+            head->code = iloc_op_list_concat(head->code, tail->code);
         }
         return head;
     }
