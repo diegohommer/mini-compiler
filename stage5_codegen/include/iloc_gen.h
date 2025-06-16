@@ -35,15 +35,34 @@ void iloc_gen_store(asd_tree_t* output, asd_tree_t* exp, int var_offset, int var
 void iloc_gen_load(asd_tree_t* output, int var_offset, int var_level);
 
 /**
+ * @brief Generates ILOC code for an if-else control structure.
+ *
+ * Generates conditional branching code based on the result of the
+ * evaluated expression. If the condition is true, the 'if_block'
+ * is executed; otherwise, the 'else_block' is executed (if present).
+ *
+ * @param output     Pointer to the AST node to which the generated
+ *                   ILOC code will be appended.
+ * @param exp        AST node containing the condition expression
+ *                   and its generated code.
+ * @param if_block   AST node containing the code to execute if
+ *                   the condition is true.
+ * @param else_block AST node containing the code to execute if
+ *                   the condition is false. Can be NULL if no
+ *                   else block is present.
+ */
+void iloc_gen_if(asd_tree_t* output, asd_tree_t* exp, asd_tree_t* if_block, asd_tree_t* else_block);
+void iloc_gen_if(asd_tree_t* output, asd_tree_t* exp, asd_tree_t* if_block, asd_tree_t* else_block);
+
+/**
  * @brief Generates ILOC code for a while loop structure.
  *
- * @param output            Pointer to the AST node to which the generated
+ * @param output     Pointer to the AST node to which the generated
  *                          ILOC code will be appended.
  * @param exp        The expression node representing the loop condition.
  * @param cmd_block  The command block node representing the loop body.
  */
 void iloc_gen_while(asd_tree_t* output, asd_tree_t* exp, asd_tree_t* cmd_block);
-
 
 /**
  * @brief Generates ILOC code for a unary expression and appends the instructions
