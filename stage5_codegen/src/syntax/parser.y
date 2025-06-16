@@ -426,6 +426,7 @@ destroy_scope
 void yyerror(const char *message)
 {
     fprintf(stderr, "Syntax error at line %d: \"%s\"\n", get_line_number(), message);
+    exit(1);
 }
 
 /* Create AST node for unary expressions */
