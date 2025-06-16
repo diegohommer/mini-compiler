@@ -237,7 +237,6 @@ iloc_op_list_t* iloc_op_list_concat(iloc_op_list_t* left_list, iloc_op_list_t* r
 void print_iloc_list(const iloc_op_list_t* list)
 {
     if (list == NULL) {
-        printf("ILOC list is NULL\n");
         return;
     }
 
