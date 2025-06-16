@@ -52,7 +52,6 @@ void iloc_gen_load(asd_tree_t* output, int var_offset, int var_level);
  *                   else block is present.
  */
 void iloc_gen_if(asd_tree_t* output, asd_tree_t* exp, asd_tree_t* if_block, asd_tree_t* else_block);
-void iloc_gen_if(asd_tree_t* output, asd_tree_t* exp, asd_tree_t* if_block, asd_tree_t* else_block);
 
 /**
  * @brief Generates ILOC code for a while loop structure.
