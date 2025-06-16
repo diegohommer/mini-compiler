@@ -11,7 +11,7 @@
 #define RBSS_ID -2
 #define RFP_ID  -1
 
-#define UNUSED_OPERAND 0
+#define UNUSED_OP 0
 
 #define INT_SIZE 4
 
