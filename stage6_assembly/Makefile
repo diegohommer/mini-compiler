@@ -13,7 +13,7 @@ CFLAGS = -I$(IDIR) -Wall -Werror -fsanitize=address
 
 
 # Files
-_DEPS = parser.tab.h asd.h symbol_table.h scope_stack.h type_infer.h errors.h
+_DEPS = parser.tab.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 # Source files (including generated ones)
@@ -23,7 +23,7 @@ SRC := $(shell find $(SDIR) -name '*.c') \
  
 OBJ := $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(SRC))
 
-EXEC = $(BDIR)/stage5.out
+EXEC = $(BDIR)/stage6.out
 
 # Default execution to all rules
 all: $(EXEC)
