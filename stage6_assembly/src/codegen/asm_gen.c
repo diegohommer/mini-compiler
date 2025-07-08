@@ -71,6 +71,20 @@ void print_iloc_to_asm(iloc_op_t* op, char** globals_by_offset)
             printf("\tmovl %%eax, %s\n", dest);
             break;
 
+        case OP_LOADI:
+            printf("\tmovl $%d, %s\n", op->operand1, src2);
+            break;
+
+        case OP_STOREAI:
+            printf("\tmovl %s, %%eax\n", src1);
+            if (op->operand2 == RFP_ID) {
+                printf("\tmovl %%eax, %d(%%rbp)\n", -(op->operand3) - 4);
+            } else {
+                int var_idx = (op->operand2 / 4);
+                printf("\tmovl %%eax, %s(%%rip)\n", globals_by_offset[var_idx]);
+            }
+            break;
+
         default:
             break;
     }
