@@ -24,6 +24,7 @@
  */
 typedef enum {
     OP_NOP,     /**< nop */
+    OP_HALT,    /**< halt */
     OP_ADD,     /**< add r1, r2 => r3 */
     OP_SUB,     /**< sub r1, r2 => r3 */
     OP_MULT,    /**< mult r1, r2 => r3 */

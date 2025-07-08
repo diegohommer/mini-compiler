@@ -14,14 +14,14 @@ static int temp_counter = 1;
  * Each entry corresponds to the textual opcode name without operand formatting.
  */
 static const char* opcode_names[] = {
-    [OP_INVALID] = "invalid", [OP_NOP] = "nop",       [OP_ADD] = "add",
-    [OP_SUB] = "sub",         [OP_MULT] = "mult",     [OP_DIV] = "div",
-    [OP_MULTI] = "multI",     [OP_AND] = "and",       [OP_OR] = "or",
-    [OP_XORI] = "xorI",       [OP_LOADAI] = "loadAI", [OP_LOADI] = "loadI",
-    [OP_STOREAI] = "storeAI", [OP_I2I] = "i2i",       [OP_JUMPI] = "jumpI",
-    [OP_CBR] = "cbr",         [OP_CMP_LT] = "cmp_LT", [OP_CMP_LE] = "cmp_LE",
-    [OP_CMP_EQ] = "cmp_EQ",   [OP_CMP_GE] = "cmp_GE", [OP_CMP_GT] = "cmp_GT",
-    [OP_CMP_NE] = "cmp_NE",
+    [OP_INVALID] = "invalid", [OP_NOP] = "nop",         [OP_HALT] = "halt",
+    [OP_ADD] = "add",         [OP_SUB] = "sub",         [OP_MULT] = "mult",
+    [OP_DIV] = "div",         [OP_MULTI] = "multI",     [OP_AND] = "and",
+    [OP_OR] = "or",           [OP_XORI] = "xorI",       [OP_LOADAI] = "loadAI",
+    [OP_LOADI] = "loadI",     [OP_STOREAI] = "storeAI", [OP_I2I] = "i2i",
+    [OP_JUMPI] = "jumpI",     [OP_CBR] = "cbr",         [OP_CMP_LT] = "cmp_LT",
+    [OP_CMP_LE] = "cmp_LE",   [OP_CMP_EQ] = "cmp_EQ",   [OP_CMP_GE] = "cmp_GE",
+    [OP_CMP_GT] = "cmp_GT",   [OP_CMP_NE] = "cmp_NE",
 };
 
 int temp_new(void) { return temp_counter++; }
@@ -93,8 +93,9 @@ void print_iloc_op(const iloc_op_t* op)
 
     switch (op->opcode) {
         case OP_NOP:
+        case OP_HALT:
             // opcode: nop
-            printf("nop\n");
+            printf("%s\n", opcode_names[op->opcode]);
             break;
 
         case OP_ADD:
