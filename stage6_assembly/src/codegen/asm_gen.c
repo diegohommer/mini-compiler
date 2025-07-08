@@ -18,7 +18,7 @@
  */
 static const char* asm_opcode_names[] = {
     [OP_INVALID] = "invalid", [OP_NOP] = "nop",   [OP_HALT] = "jmp end", [OP_ADD] = "addl",
-    [OP_SUB] = "subl",        [OP_MULT] = "imul", [OP_DIV] = "idiv",     [OP_AND] = "and",
+    [OP_SUB] = "subl",        [OP_MULT] = "imul", [OP_MULTI] = "imul",   [OP_AND] = "and",
     [OP_OR] = "or",           [OP_XORI] = "xor",  [OP_JUMPI] = "jmp"};
 
 const char* asm_reg_to_str(int reg_id, char* buf, size_t bufsize)
@@ -56,8 +56,25 @@ void print_iloc_to_asm(iloc_op_t* op, char** globals_by_offset)
 
         case OP_ADD:
         case OP_SUB:
+        case OP_MULT:
+        case OP_AND:
+        case OP_OR:
             printf("\tmovl %s, %%eax\n", src1);
             printf("\t%s %s, %%eax\n", asm_opcode_names[op->opcode], src2);
+            printf("\tmovl %%eax, %s\n", dest);
+            break;
+
+        case OP_DIV:
+            printf("\tmovl %s, %%eax\n", src1);
+            printf("\tcltd\n");
+            printf("\tidivl %s\n", src2);
+            printf("\tmovl %%eax, %s\n", dest);
+            break;
+
+        case OP_MULTI:
+        case OP_XORI:
+            printf("\tmovl %s, %%eax\n", src1);
+            printf("\t%s $%d, %%eax\n", asm_opcode_names[op->opcode], op->operand2);
             printf("\tmovl %%eax, %s\n", dest);
             break;
 
