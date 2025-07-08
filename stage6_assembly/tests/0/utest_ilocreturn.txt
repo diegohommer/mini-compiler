@@ -1,0 +1,6 @@
+main returns int is [
+    declare x as int with 5
+    declare y as int with 8
+    declare z as int with 20
+    return (x + y) * z as int
+];
