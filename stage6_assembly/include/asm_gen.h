@@ -6,36 +6,32 @@
 #ifndef ASM_GEN_H
 #define ASM_GEN_H
 
-#include "symbol_table.h"
 #include "iloc_ir.h"
+#include "symbol_table.h"
 
 /**
- * @brief Generates assembly code for a single global variable.
+ * @brief Prints assembly directives for a single global variable.
  *
- * @param var              Pointer to the symbol representing the global variable.
+ * @param name Pointer to the name of the global variable.
  *
  * @details
- * This function outputs the assembly directives and initialization
- * code needed to declare and allocate space for the global variable
- * in the assembly output.
+ * Prints assembly directives to declare and allocate space for the global
+ * variable. The output is printed directly to standard output and follows
+ * the GCC-compatible syntax using the .bss section for uninitialized data.
  */
-void asm_gen_global_var(symbol_t* var);
+void print_asm_global_var(const char* name);
 
 /**
- * @brief Generates assembly code from ILOC intermediate representation.
+ * @brief Prints assembly code translated from ILOC intermediate representation.
  *
- * @param global_scope     Pointer to the global symbol table containing
- *                         variable and function declarations.
- * @param iloc_code        Pointer to the list of ILOC operations to be
- *                         translated into assembly.
+ * @param global_scope Pointer to the global symbol table containing
+ *                     variable and function declarations.
+ * @param iloc_code    Pointer to the list of ILOC operations to translate.
  *
  * @details
- * This function traverses the provided ILOC operation list and uses the
- * information from the global symbol table to generate corresponding
- * assembly instructions. The generated assembly is printed directly to
- * the standard output.
+ * Traverses the ILOC operation list and prints corresponding assembly
+ * instructions to standard output.
  */
-void asm_gen(symbol_table_t* global_scope, iloc_op_list_t* iloc_code);
+void print_asm(symbol_table_t* global_scope, iloc_op_list_t* iloc_code);
 
 #endif  // ASM_GEN_H
-
