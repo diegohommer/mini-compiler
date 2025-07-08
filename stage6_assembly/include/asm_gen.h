@@ -10,6 +10,22 @@
 #include "symbol_table.h"
 
 /**
+ * @brief Converts a register ID to its assembly representation.
+ *
+ * Special registers like the frame pointer (rbp) and static base (rbss)
+ * are mapped to their respective names. Other registers are formatted as
+ * RIP-relative virtual registers (e.g., rN(%rip)).
+ *
+ * @param reg_id   Register identifier.
+ * @param buf      Buffer to store the resulting string.
+ * @param bufsize  Size of the buffer.
+ * @return         Pointer to the buffer containing the formatted register string.
+ *
+ * @note The buffer must be large enough to hold the output string.
+ */
+const char* asm_reg_to_str(int reg_id, char* buf, size_t bufsize);
+
+/**
  * @brief Prints assembly directives for a single global variable.
  *
  * @param name Pointer to the name of the global variable.
@@ -24,13 +40,16 @@ void print_asm_global_var(const char* name);
 /**
  * @brief Translates a single ILOC operation into assembly code.
  *
- * @param op Pointer to the ILOC operation to be translated.
+ * @param op                Pointer to the ILOC operation to be translated.
+ * @param globals_by_offset Array of global variable names indexed by their offset.
  *
  * @details
  * This function emits the equivalent x86_64 assembly instructions
- * corresponding to the given ILOC instruction.
+ * corresponding to the given ILOC instruction. The `globals_by_offset`
+ * array is used to resolve global variable names from their offsets
+ * when generating memory access instructions.
  */
-void print_iloc_to_asm(iloc_op_t* op);
+void print_iloc_to_asm(iloc_op_t* op, char** globals_by_offset);
 
 /**
  * @brief Prints assembly code translated from ILOC intermediate representation.
