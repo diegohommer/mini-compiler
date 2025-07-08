@@ -148,23 +148,39 @@ Make sure the following tools are installed on your system:
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+Use the generated executable `./bin/mini_compiler` to compile source files written in the defined language.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+The program supports two output modes via command-line flags:
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+- `--iloc` — outputs the Intermediate Language (ILOC) code.
+- `--asm` (default) — outputs the generated x86 assembly code.
 
+There is a Python script `ilocsim.py` in the `src/codegen` subdirectory to simulate ILOC execution.  
+The generated assembly can be compiled and run with GCC.  
+Run semantic tests with the provided `run_tests.sh` script, which checks compiler exit codes against expected results.
+
+### Example
+
+```sh
+# Generate x86 assembly (default)
+./bin/mini_compiler < source_code.txt
+
+# Generate ILOC code
+./bin/mini_compiler --iloc < source_code.txt
+```
 
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [ ] Support for function calls in code generation  
+- [ ] Support for float operations  
+- [ ] Support for calling other functions at runtime  
+- [ ] ILOC optimizations  
+- [ ] Assembly optimizations  
+- [ ] Register allocation improvements  
 
-See the [open issues](https://github.com/diegohommer/mini-compiler/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/diegohommer/mini-compiler/issues) for a full list of proposed features and known issues.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -197,7 +213,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the project_license. See `LICENSE.txt` for more information.
+Distributed under the MIT license. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -206,7 +222,7 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+Diego Hommerding Amorim - [LinkedIn](https://www.linkedin.com/in/diegohommer) - diegohommeramorim@gmail.com
 
 Project Link: [https://github.com/diegohommer/mini-compiler](https://github.com/diegohommer/mini-compiler)
 
@@ -217,9 +233,7 @@ Project Link: [https://github.com/diegohommer/mini-compiler](https://github.com/
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* []()
-* []()
-* []()
+* [Prof. Lucas Schnorr](https://github.com/schnorr) – for guidance and support during the course.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
