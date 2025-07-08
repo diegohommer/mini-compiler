@@ -5,7 +5,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Configure paths relative to the project root
-MY_COMPILER="$PROJECT_ROOT/bin/stage5.out"
+MY_COMPILER="$PROJECT_ROOT/bin/stage6.out"
 TESTS_DIR="$PROJECT_ROOT/tests"
 
 # Color setup
