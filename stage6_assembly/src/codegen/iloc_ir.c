@@ -18,9 +18,10 @@ static const char* opcode_names[] = {
     [OP_SUB] = "sub",         [OP_MULT] = "mult",     [OP_DIV] = "div",
     [OP_MULTI] = "multI",     [OP_AND] = "and",       [OP_OR] = "or",
     [OP_XORI] = "xorI",       [OP_LOADAI] = "loadAI", [OP_LOADI] = "loadI",
-    [OP_STOREAI] = "storeAI", [OP_JUMPI] = "jumpI",   [OP_CBR] = "cbr",
-    [OP_CMP_LT] = "cmp_LT",   [OP_CMP_LE] = "cmp_LE", [OP_CMP_EQ] = "cmp_EQ",
-    [OP_CMP_GE] = "cmp_GE",   [OP_CMP_GT] = "cmp_GT", [OP_CMP_NE] = "cmp_NE",
+    [OP_STOREAI] = "storeAI", [OP_I2I] = "i2i",       [OP_JUMPI] = "jumpI",
+    [OP_CBR] = "cbr",         [OP_CMP_LT] = "cmp_LT", [OP_CMP_LE] = "cmp_LE",
+    [OP_CMP_EQ] = "cmp_EQ",   [OP_CMP_GE] = "cmp_GE", [OP_CMP_GT] = "cmp_GT",
+    [OP_CMP_NE] = "cmp_NE",
 };
 
 int temp_new(void) { return temp_counter++; }
@@ -129,6 +130,12 @@ void print_iloc_op(const iloc_op_t* op)
             iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
             iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
             printf("%s %s => %s, %d\n", opcode_names[op->opcode], buf1, buf2, op->operand3);
+            break;
+
+        case OP_I2I:
+            iloc_reg_to_str(op->operand1, buf1, sizeof(buf1));
+            iloc_reg_to_str(op->operand2, buf2, sizeof(buf2));
+            printf("%s %s => %s\n", opcode_names[op->opcode], buf1, buf2);
             break;
 
         case OP_JUMPI:

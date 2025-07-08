@@ -35,6 +35,7 @@ typedef enum {
     OP_LOADAI,  /**< loadAI r1, c2 => r2 */
     OP_LOADI,   /**< loadI c1 => r2 */
     OP_STOREAI, /**< storeAI r1 => r2, c3 */
+    OP_I2I,     /**< i2i r1 => r2 */
     OP_JUMPI,   /**< jumpI -> l1 */
     OP_CBR,     /**< cbr r1 -> l2, l3 */
     OP_CMP_LT,  /**< cmp_LT r1, r2 -> r3 */
