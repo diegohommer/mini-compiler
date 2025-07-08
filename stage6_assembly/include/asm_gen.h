@@ -22,6 +22,17 @@
 void print_asm_global_var(const char* name);
 
 /**
+ * @brief Translates a single ILOC operation into assembly code.
+ *
+ * @param op Pointer to the ILOC operation to be translated.
+ *
+ * @details
+ * This function emits the equivalent x86_64 assembly instructions
+ * corresponding to the given ILOC instruction.
+ */
+void print_iloc_to_asm(iloc_op_t* op);
+
+/**
  * @brief Prints assembly code translated from ILOC intermediate representation.
  *
  * @param global_scope Pointer to the global symbol table containing
