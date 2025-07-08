@@ -17,9 +17,10 @@
  * Each entry corresponds to the textual opcode name without operand formatting.
  */
 static const char* asm_opcode_names[] = {
-    [OP_INVALID] = "invalid", [OP_NOP] = "nop",   [OP_HALT] = "jmp end", [OP_ADD] = "addl",
-    [OP_SUB] = "subl",        [OP_MULT] = "imul", [OP_MULTI] = "imul",   [OP_AND] = "and",
-    [OP_OR] = "or",           [OP_XORI] = "xor",  [OP_JUMPI] = "jmp"};
+    [OP_INVALID] = "invalid", [OP_NOP] = "nop",      [OP_HALT] = "jmp .LE", [OP_ADD] = "addl",
+    [OP_SUB] = "subl",        [OP_MULT] = "imul",    [OP_MULTI] = "imul",   [OP_AND] = "and",
+    [OP_OR] = "or",           [OP_XORI] = "xor",     [OP_CMP_LT] = "setl",  [OP_CMP_LE] = "setle",
+    [OP_CMP_EQ] = "sete",     [OP_CMP_GE] = "setge", [OP_CMP_GT] = "setg",  [OP_CMP_NE] = "setne"};
 
 const char* asm_reg_to_str(int reg_id, char* buf, size_t bufsize)
 {
@@ -97,9 +98,42 @@ void print_iloc_to_asm(iloc_op_t* op, char** globals_by_offset)
             if (op->operand2 == RFP_ID) {
                 printf("\tmovl %%eax, %d(%%rbp)\n", -(op->operand3) - 4);
             } else {
-                int var_idx = (op->operand2 / 4);
+                int var_idx = (op->operand3 / 4);
                 printf("\tmovl %%eax, %s(%%rip)\n", globals_by_offset[var_idx]);
             }
+            break;
+
+        case OP_I2I:
+            printf("\tmovl %s, %%eax\n", src1);
+            printf("\tmovl %%eax, %s\n", src2);
+            break;
+
+        case OP_JUMPI:
+            printf("\tjmp .L%d\n", op->operand1);
+            break;
+
+        case OP_CBR:
+            printf("\tmovl %s, %%eax\n", src1);
+            printf("\tcmpl $0, %%eax\n");
+            printf("\tjne .L%d\n", op->operand2);
+            printf("\tjmp .L%d\n", op->operand3);
+            break;
+
+        case OP_CMP_LT:
+        case OP_CMP_LE:
+        case OP_CMP_EQ:
+        case OP_CMP_GE:
+        case OP_CMP_GT:
+        case OP_CMP_NE:
+            printf("\tmovl %s, %%eax\n", src1);
+            printf("\tcmpl %s, %%eax\n", src2);
+            printf("\t%s %%al\n", asm_opcode_names[op->opcode]);
+            printf("\tmovzbl %%al, %%eax\n");
+            printf("\tmovl %%eax, %s\n", dest);
+            break;
+
+        case OP_LABEL:
+            printf(".L%d:\n", op->operand1);
             break;
 
         default:
@@ -152,7 +186,7 @@ void print_asm(symbol_table_t* global_scope, iloc_op_list_t* iloc_code)
     // Only set return value to 0 if no user return value is generated:
     printf("\tmovl $0, %%eax\n");
 
-    printf("end:\n");
+    printf(".LE:\n");
     printf("\tpopq %%rbp\n");
     printf("\tret\n");
 
