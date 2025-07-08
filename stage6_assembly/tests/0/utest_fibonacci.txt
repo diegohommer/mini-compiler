@@ -22,4 +22,6 @@ fib returns int with n as int is [
         global_last is temp
         i is i + 1
     ]
+
+    return global_current as int
 ];

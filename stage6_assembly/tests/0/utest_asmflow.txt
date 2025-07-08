@@ -1,0 +1,9 @@
+main returns int is [
+   declare a as int with 128
+    if (a <= 64) [
+        a is a + 1
+    ] else [
+        a is a - 1
+    ]
+    return a as int
+];

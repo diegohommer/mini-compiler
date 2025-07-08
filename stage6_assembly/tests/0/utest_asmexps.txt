@@ -1,0 +1,13 @@
+declare a as int,
+declare b as int,
+main returns int is [
+    declare x as int with 5
+    declare f as int
+    a is 9
+    x is a + 3
+    x is x + (-8)
+    x is (x * x) / 8
+    f is !((0 | 0) & 1)
+
+    return (x + f) as int
+];
