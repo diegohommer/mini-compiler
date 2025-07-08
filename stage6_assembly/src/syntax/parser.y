@@ -85,7 +85,7 @@
 
 /* PROGRAM - A optional list of elements followed by a semicolon */
 program
-    : create_scope prog_list destroy_scope ';'  { tree = $2; }
+    : create_scope prog_list ';'  { tree = $2; }
     | %empty                                    { tree = NULL; }
     ;
 
