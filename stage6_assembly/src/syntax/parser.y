@@ -275,7 +275,7 @@ return_cmd
         {
             int return_type = infer_return_type(scope_stack, $2, $4);
             $$ = asd_new("return", return_type, $2->lexical_payload, 1, $2);
-            iloc_op_list_free($2->code);
+            iloc_gen_return($$, $2);
         }
     ;
 

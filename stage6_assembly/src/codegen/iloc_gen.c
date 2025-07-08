@@ -174,3 +174,12 @@ void iloc_gen_literal(asd_tree_t* output, const char* value)
     output->code = code;
     output->temp = temp;
 }
+
+void iloc_gen_return(asd_tree_t *output, asd_tree_t* exp)
+{
+    iloc_op_list_t* code = exp->code;
+    iloc_op_t* iloc_op = iloc_op_new(OP_I2I, exp->temp, 1, UNUSED_OP);
+    iloc_op_list_add_op(code, iloc_op);
+
+    output->code = code;
+}

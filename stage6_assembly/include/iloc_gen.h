@@ -94,4 +94,13 @@ void iloc_gen_binary_exp(asd_tree_t* output, asd_tree_t* left, const char* op_to
  */
 void iloc_gen_literal(asd_tree_t* output, const char* value);
 
+/**
+ * @brief Generates ILOC code for returning from the main function.
+ *        It moves the return value (assumed in a temporary) to r1.
+ *
+ * @param output     Pointer to the AST node where generated code is appended.
+ * @param exp        Pointer to the AST node of the return expression.
+ */
+void iloc_gen_return(asd_tree_t* output, asd_tree_t* exp);
+
 #endif  // ILOC_GEN_H
