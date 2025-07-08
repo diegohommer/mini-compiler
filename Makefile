@@ -23,7 +23,7 @@ SRC := $(shell find $(SDIR) -name '*.c') \
  
 OBJ := $(patsubst $(SDIR)/%.c,$(ODIR)/%.o,$(SRC))
 
-EXEC = $(BDIR)/stage6.out
+EXEC = $(BDIR)/mini_compiler
 
 # Default execution to all rules
 all: $(EXEC)
