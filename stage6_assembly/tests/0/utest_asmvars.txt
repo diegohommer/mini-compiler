@@ -1,0 +1,4 @@
+declare a as int,
+declare b as int,
+declare c as int,
+declare d as int;
