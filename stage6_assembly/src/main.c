@@ -15,11 +15,15 @@ int main(int argc, char **argv)
 {
     scope_stack = scope_stack_new();
     int ret = yyparse();
+
+    iloc_op_list_t *code = (tree != NULL) ? tree->code : NULL;
+    print_asm(scope_stack->tables[0], code);
+
     if (tree) {
-        print_asm(scope_stack->tables[0], tree->code);
         iloc_op_list_free(tree->code);
         asd_free(tree);
     }
+
     scope_stack_free(scope_stack);
     yylex_destroy();
     return ret;
